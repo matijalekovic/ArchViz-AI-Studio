@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ArchViz AI Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              background: {
+                DEFAULT: '#FAFAF8',
+                secondary: '#F5F5F3',
+                tertiary: '#EEEDE9',
+              },
+              foreground: {
+                DEFAULT: '#1A1A1A',
+                secondary: '#4A4A4A',
+                muted: '#8A8A8A',
+                subtle: '#B0B0B0',
+              },
+              border: {
+                DEFAULT: '#E5E5E0',
+                subtle: '#EFEFEA',
+                strong: '#D0D0C8',
+              },
+              accent: {
+                DEFAULT: '#C9B99A',
+                hover: '#B8A687',
+                muted: '#E8E0D0',
+              },
+              surface: {
+                elevated: '#FFFFFF',
+                sunken: '#F0F0EC',
+              },
+            },
+            fontFamily: {
+              sans: ['Inter', 'system-ui', 'sans-serif'],
+              mono: ['JetBrains Mono', 'Consolas', 'monospace'],
+            },
+            spacing: {
+              'sidebar': '280px',
+              'panel': '320px',
+            },
+            boxShadow: {
+              'subtle': '0 1px 2px rgba(0, 0, 0, 0.04)',
+              'elevated': '0 8px 32px rgba(0, 0, 0, 0.12)',
+            }
+          },
+        },
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Inter', sans-serif; }
+      /* Custom scrollbar */
+      ::-webkit-scrollbar { width: 6px; height: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: #D0D0C8; border-radius: 99px; }
+      ::-webkit-scrollbar-thumb:hover { background: #8A8A8A; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react/": "https://esm.sh/react@18.2.0/",
+    "react-dom": "https://esm.sh/react-dom@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "lucide-react": "https://esm.sh/lucide-react@0.309.0?deps=react@18.2.0",
+    "clsx": "https://esm.sh/clsx@2.1.0",
+    "@radix-ui/react-slider": "https://esm.sh/@radix-ui/react-slider@1.1.2?deps=react@18.2.0,react-dom@18.2.0",
+    "@radix-ui/react-accordion": "https://esm.sh/@radix-ui/react-accordion@1.1.2?deps=react@18.2.0,react-dom@18.2.0",
+    "@radix-ui/react-switch": "https://esm.sh/@radix-ui/react-switch@1.0.3?deps=react@18.2.0,react-dom@18.2.0",
+    "tailwind-merge": "https://esm.sh/tailwind-merge@2.2.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+  }
+}
+</script>
+</head>
+  <body class="bg-background text-foreground antialiased overflow-hidden">
+    <div id="root"></div>
+  </body>
+</html>
