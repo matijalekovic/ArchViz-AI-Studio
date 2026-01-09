@@ -5,7 +5,6 @@ import { LeftSidebar } from './components/panels/left/LeftSidebar';
 import { RightPanel } from './components/panels/right/RightPanel';
 import { BottomPanel } from './components/panels/bottom/BottomPanel';
 import { ImageCanvas } from './components/canvas/ImageCanvas';
-import { FloatingGenerateButton } from './components/FloatingGenerateButton';
 import { GenerationMode } from './types';
 
 const ShortcutsListener: React.FC = () => {
@@ -34,14 +33,6 @@ const ShortcutsListener: React.FC = () => {
            const btn = document.querySelector('button[aria-label="generate-trigger"]') as HTMLButtonElement;
            if (btn) btn.click();
         }
-      }
-
-      // Cmd/Ctrl + S = Export (Trigger the save button in TopBar)
-      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-        e.preventDefault();
-        // We can't easily reach the handleExport inside TopBar from here without complex Context refactoring,
-        // so we'll just alert for now or implement a global event bus. 
-        // For this specific request, we will skip the shortcut implementation to avoid complexity.
       }
 
       // Mode Switching (Cmd + 1-9)
@@ -76,7 +67,6 @@ const Layout: React.FC = () => {
         <LeftSidebar />
         <div className="flex-1 flex flex-col min-w-0 relative">
           <ImageCanvas />
-          <FloatingGenerateButton />
           <BottomPanel />
         </div>
         <RightPanel />

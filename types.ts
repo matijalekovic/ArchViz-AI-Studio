@@ -1,3 +1,4 @@
+
 export type GenerationMode = 
   | 'render-3d' 
   | 'render-cad' 
@@ -50,7 +51,7 @@ export interface WorkflowSettings {
   viewType: 'exterior' | 'interior' | 'aerial' | 'detail';
   detectedElements: DetectedElement[];
   renderMode: 'enhance' | 'stylize' | 'hybrid' | 'strict-realism' | 'concept-push';
-  canvasSync: boolean;
+  canvasSync: boolean; // Used for Split View toggle
   compareMode: boolean;
 
   // 2. CAD to Render
@@ -118,13 +119,46 @@ export interface WorkflowSettings {
   img3dMesh: { type: 'organic' | 'arch'; edges: number; fill: boolean };
   img3dOutput: { format: 'obj' | 'fbx' | 'gltf'; textureRes: number };
 
-  // 11. Video
-  videoMode: 'animate' | 'path' | 'morph' | 'assembly';
-  videoMotion: { type: 'cinematic' | 'ken-burns' | 'parallax'; preset: string };
-  videoPath: { type: 'flyaround' | 'walkthrough'; smoothness: number };
-  videoMorph: { transitionTime: number };
-  videoAssembly: { type: 'assembly' | 'construction'; timing: 'seq' | 'group' };
-  videoOutput: { res: '1080p' | '4k'; fps: 24 | 30 | 60; quality: number };
+  // 11. Video Studio
+  videoState: VideoState;
+}
+
+export type VideoModel = 'veo-2' | 'kling-1.6';
+export type VideoInputMode = 'image-animate' | 'camera-path' | 'image-morph' | 'multi-shot';
+export type CameraMotionType = 'static' | 'pan' | 'orbit' | 'dolly' | 'crane' | 'drone' | 'rotate' | 'push-in' | 'pull-out' | 'custom';
+
+export interface VideoState {
+  inputMode: VideoInputMode;
+  model: VideoModel;
+  scenario: string;
+  compareMode: boolean;
+  
+  // Generation Params
+  duration: number; // seconds
+  resolution: '720p' | '1080p' | '4k';
+  fps: 24 | 30 | 60;
+  aspectRatio: '16:9' | '9:16' | '1:1' | '4:3' | '21:9';
+  motionAmount: number; // 1-10
+  seed: number;
+  seedLocked: boolean;
+
+  // Camera Control
+  camera: {
+    type: CameraMotionType;
+    direction: number; // 0-360 degrees
+    smoothness: number; // 0-100
+    speed: 'slow' | 'normal' | 'fast';
+  };
+
+  // Timeline & Playback
+  timeline: {
+    isPlaying: boolean;
+    currentTime: number;
+    duration: number;
+    zoom: number;
+  };
+
+  generatedVideoUrl: string | null;
 }
 
 export interface GeometryState {
@@ -187,12 +221,18 @@ export interface OutputState {
   seedLocked: boolean;
 }
 
+export interface CanvasState {
+  zoom: number;
+  pan: { x: number; y: number };
+}
+
 export interface HistoryItem {
   id: string;
   timestamp: number;
   thumbnail: string; // Base64
   prompt: string;
   mode: GenerationMode;
+  settings?: any;
 }
 
 export interface AppState {
@@ -211,6 +251,7 @@ export interface AppState {
   materials: MaterialState;
   context: ContextState;
   output: OutputState;
+  canvas: CanvasState;
   
   history: HistoryItem[];
 
@@ -229,12 +270,17 @@ export type Action =
   | { type: 'SET_GENERATING'; payload: boolean }
   | { type: 'SET_PROGRESS'; payload: number }
   | { type: 'UPDATE_WORKFLOW'; payload: Partial<WorkflowSettings> }
+  | { type: 'UPDATE_VIDEO_STATE'; payload: Partial<VideoState> }
+  | { type: 'UPDATE_VIDEO_CAMERA'; payload: Partial<VideoState['camera']> }
+  | { type: 'UPDATE_VIDEO_TIMELINE'; payload: Partial<VideoState['timeline']> }
   | { type: 'UPDATE_GEOMETRY'; payload: Partial<GeometryState> }
   | { type: 'UPDATE_CAMERA'; payload: Partial<CameraState> }
   | { type: 'UPDATE_LIGHTING'; payload: Partial<LightingState> }
   | { type: 'UPDATE_MATERIALS'; payload: Partial<MaterialState> }
   | { type: 'UPDATE_CONTEXT'; payload: Partial<ContextState> }
   | { type: 'UPDATE_OUTPUT'; payload: Partial<OutputState> }
+  | { type: 'SET_CANVAS_ZOOM'; payload: number }
+  | { type: 'SET_CANVAS_PAN'; payload: { x: number; y: number } }
   | { type: 'SET_ACTIVE_TAB'; payload: string }
   | { type: 'SET_ACTIVE_BOTTOM_TAB'; payload: string }
   | { type: 'TOGGLE_BOTTOM_PANEL' }

@@ -1,3 +1,4 @@
+
 import { AppState, StyleConfiguration } from '../types';
 
 export const BUILT_IN_STYLES: StyleConfiguration[] = [
@@ -527,8 +528,9 @@ export function generatePrompt(state: AppState): string {
   // --- MODE SPECIFIC TAIL ---
   switch (mode) {
     case 'video':
-      add(`Cinematic camera movement: ${workflow.videoMotion.type}`);
-      if (workflow.videoMode === 'path') add('smooth flythrough path');
+      add(`Cinematic camera movement: ${workflow.videoState.camera.type}`);
+      if (workflow.videoState.inputMode === 'camera-path') add('smooth flythrough path');
+      if (workflow.videoState.scenario) add(workflow.videoState.scenario);
       add('video sequence, motion blur');
       break;
     

@@ -1,6 +1,38 @@
+
 import React, { createContext, useContext, useReducer, useEffect, PropsWithChildren } from 'react';
-import { AppState, Action, GeometryState, CameraState, LightingState, MaterialState, ContextState, OutputState, WorkflowSettings } from './types';
+import { AppState, Action, GeometryState, CameraState, LightingState, MaterialState, ContextState, OutputState, WorkflowSettings, CanvasState, VideoState } from './types';
 import { generatePrompt } from './engine/promptEngine';
+
+const initialVideoState: VideoState = {
+  inputMode: 'image-animate',
+  model: 'veo-2',
+  scenario: '',
+  compareMode: false,
+  
+  duration: 10,
+  resolution: '1080p',
+  fps: 24,
+  aspectRatio: '16:9',
+  motionAmount: 5,
+  seed: 123456,
+  seedLocked: false,
+
+  camera: {
+    type: 'static',
+    direction: 45,
+    smoothness: 50,
+    speed: 'normal',
+  },
+
+  timeline: {
+    isPlaying: false,
+    currentTime: 0,
+    duration: 10,
+    zoom: 100,
+  },
+
+  generatedVideoUrl: null,
+};
 
 const initialWorkflow: WorkflowSettings = {
   // 1. 3D to Render
@@ -13,7 +45,7 @@ const initialWorkflow: WorkflowSettings = {
     { id: '4', name: 'Pavement', type: 'site', confidence: 0.7, selected: true },
   ],
   renderMode: 'enhance',
-  canvasSync: true,
+  canvasSync: false,
   compareMode: false,
 
   // 2. CAD to Render
@@ -103,13 +135,8 @@ const initialWorkflow: WorkflowSettings = {
   img3dMesh: { type: 'arch', edges: 80, fill: true },
   img3dOutput: { format: 'obj', textureRes: 2048 },
 
-  // 11. Video
-  videoMode: 'path',
-  videoMotion: { type: 'cinematic', preset: 'Orbit' },
-  videoPath: { type: 'flyaround', smoothness: 60 },
-  videoMorph: { transitionTime: 2.0 },
-  videoAssembly: { type: 'assembly', timing: 'seq' },
-  videoOutput: { res: '1080p', fps: 30, quality: 80 },
+  // 11. Video Studio
+  videoState: initialVideoState,
 };
 
 const initialGeometry: GeometryState = {
@@ -172,6 +199,11 @@ const initialOutput: OutputState = {
   seedLocked: false,
 };
 
+const initialCanvas: CanvasState = {
+  zoom: 1,
+  pan: { x: 0, y: 0 }
+};
+
 const initialState: AppState = {
   mode: 'render-3d',
   activeStyleId: 'contemporary-minimalist',
@@ -186,6 +218,7 @@ const initialState: AppState = {
   materials: initialMaterials,
   context: initialContext,
   output: initialOutput,
+  canvas: initialCanvas,
   history: [],
   leftSidebarWidth: 280,
   rightPanelWidth: 320,
@@ -203,16 +236,24 @@ function appReducer(state: AppState, action: Action): AppState {
     case 'SET_GENERATING': return { ...state, isGenerating: action.payload };
     case 'SET_PROGRESS': return { ...state, progress: action.payload };
     case 'UPDATE_WORKFLOW': return { ...state, workflow: { ...state.workflow, ...action.payload } };
+    
+    // Video State Reducers
+    case 'UPDATE_VIDEO_STATE': return { ...state, workflow: { ...state.workflow, videoState: { ...state.workflow.videoState, ...action.payload } } };
+    case 'UPDATE_VIDEO_CAMERA': return { ...state, workflow: { ...state.workflow, videoState: { ...state.workflow.videoState, camera: { ...state.workflow.videoState.camera, ...action.payload } } } };
+    case 'UPDATE_VIDEO_TIMELINE': return { ...state, workflow: { ...state.workflow, videoState: { ...state.workflow.videoState, timeline: { ...state.workflow.videoState.timeline, ...action.payload } } } };
+
     case 'UPDATE_GEOMETRY': return { ...state, geometry: { ...state.geometry, ...action.payload } };
     case 'UPDATE_CAMERA': return { ...state, camera: { ...state.camera, ...action.payload } };
     case 'UPDATE_LIGHTING': return { ...state, lighting: { ...state.lighting, ...action.payload } };
     case 'UPDATE_MATERIALS': return { ...state, materials: { ...state.materials, ...action.payload } };
     case 'UPDATE_CONTEXT': return { ...state, context: { ...state.context, ...action.payload } };
     case 'UPDATE_OUTPUT': return { ...state, output: { ...state.output, ...action.payload } };
+    case 'SET_CANVAS_ZOOM': return { ...state, canvas: { ...state.canvas, zoom: action.payload } };
+    case 'SET_CANVAS_PAN': return { ...state, canvas: { ...state.canvas, pan: action.payload } };
     case 'SET_ACTIVE_TAB': return { ...state, activeRightTab: action.payload };
     case 'SET_ACTIVE_BOTTOM_TAB': return { ...state, activeBottomTab: action.payload };
     case 'TOGGLE_BOTTOM_PANEL': return { ...state, bottomPanelCollapsed: !state.bottomPanelCollapsed };
-    case 'ADD_HISTORY': return { ...state, history: [action.payload, ...state.history].slice(0, 20) }; // Keep max 20 items
+    case 'ADD_HISTORY': return { ...state, history: [action.payload, ...state.history].slice(0, 20) };
     case 'LOAD_PROJECT': return { ...action.payload };
     case 'RESET_PROJECT': return { ...initialState };
     default: return state;
