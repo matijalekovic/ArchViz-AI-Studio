@@ -1,6 +1,6 @@
 
 import React, { useRef, useState } from 'react';
-import { Undo, Redo, ZoomIn, ZoomOut, FolderOpen, RotateCcw, FileJson, Video, Download, Sparkles, Loader2, X, ChevronDown, CheckCircle2, FileDown, Image as ImageIcon, Maximize2, Minimize2, Film, MonitorPlay } from 'lucide-react';
+import { Undo, Redo, ZoomIn, ZoomOut, FolderOpen, RotateCcw, FileJson, Video, Download, Sparkles, Loader2, X, ChevronDown, CheckCircle2, FileDown, Image as ImageIcon, Maximize2, Minimize2, Film, MonitorPlay, Trash2, AlertTriangle } from 'lucide-react';
 import { useAppStore } from '../../store';
 import { cn } from '../../lib/utils';
 import { Toggle } from '../ui/Toggle';
@@ -11,6 +11,7 @@ export const TopBar: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   const [showSaveInfo, setShowSaveInfo] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   
   // Download options state
   const [downloadFormat, setDownloadFormat] = useState<'png' | 'jpg' | 'mp4'>('png');
@@ -24,6 +25,11 @@ export const TopBar: React.FC = () => {
   const handleZoom = (delta: number) => {
     const newZoom = Math.max(0.1, Math.min(8, state.canvas.zoom + delta));
     dispatch({ type: 'SET_CANVAS_ZOOM', payload: newZoom });
+  };
+
+  const handleClearImage = () => {
+      if (!state.uploadedImage) return;
+      setShowClearConfirm(true);
   };
 
   const handleGenerate = () => {
@@ -229,7 +235,26 @@ export const TopBar: React.FC = () => {
           <button className="p-1.5 text-foreground-secondary hover:text-foreground hover:bg-surface-elevated rounded-md transition-all" title="Redo">
             <Redo size={14} />
           </button>
+          
           <div className="w-px h-3 bg-border mx-1" />
+
+          {/* Clear Image Button */}
+          <button 
+             onClick={handleClearImage}
+             disabled={!state.uploadedImage}
+             className={cn(
+               "p-1.5 rounded-md transition-all",
+               !state.uploadedImage 
+                 ? "text-foreground-muted/30 cursor-not-allowed" 
+                 : "text-foreground-secondary hover:text-red-600 hover:bg-surface-elevated"
+             )}
+             title="Clear Image"
+          >
+             <Trash2 size={14} />
+          </button>
+
+          <div className="w-px h-3 bg-border mx-1" />
+
           <button 
             className="p-1.5 text-foreground-secondary hover:text-foreground hover:bg-surface-elevated rounded-md transition-all"
             onClick={() => handleZoom(-0.25)}
@@ -481,6 +506,42 @@ export const TopBar: React.FC = () => {
         </div>
       </div>
     </header>
+
+    {/* Clear Image Confirmation Modal */}
+    {showClearConfirm && (
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
+         <div className="w-[400px] bg-background rounded-2xl shadow-2xl border border-border overflow-hidden animate-scale-in">
+            <div className="p-6">
+               <div className="flex items-center gap-3 mb-4">
+                   <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
+                      <AlertTriangle size={20} />
+                   </div>
+                   <h3 className="text-lg font-bold text-foreground">Clear Canvas?</h3>
+               </div>
+               <p className="text-sm text-foreground-secondary leading-relaxed mb-6">
+                  Are you sure you want to clear the current image? This action cannot be undone and will remove your current workspace content.
+               </p>
+               <div className="flex gap-3">
+                  <button 
+                     onClick={() => setShowClearConfirm(false)}
+                     className="flex-1 py-2.5 text-xs font-bold text-foreground border border-border rounded-lg hover:bg-surface-sunken transition-colors"
+                  >
+                     Cancel
+                  </button>
+                  <button 
+                     onClick={() => {
+                        dispatch({ type: 'SET_IMAGE', payload: null });
+                        setShowClearConfirm(false);
+                     }}
+                     className="flex-1 py-2.5 text-xs font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors shadow-sm"
+                  >
+                     Clear Image
+                  </button>
+               </div>
+            </div>
+         </div>
+      </div>
+    )}
 
     {/* Save Project Modal Overlay */}
     {showSaveInfo && (

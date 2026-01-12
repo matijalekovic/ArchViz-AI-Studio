@@ -1,7 +1,7 @@
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { useAppStore } from '../../../store';
-import { UploadCloud, Columns, Minimize2, MoveHorizontal, Move, AlertCircle, Play, Pause, RefreshCw, Send, Paperclip, Image as ImageIcon, Plus, Bot, User, Trash2, Sparkles, X, ChevronDown, Download, Wand2, Maximize2, ZoomIn, AlertTriangle, Eraser } from 'lucide-react';
+import { UploadCloud, Columns, Minimize2, MoveHorizontal, Move, AlertCircle, Play, Pause, RefreshCw, Send, Paperclip, Image as ImageIcon, Plus, Bot, User, Trash2, Sparkles, X, ChevronDown, Download, Wand2, Maximize2, ZoomIn, Eraser } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { nanoid } from 'nanoid/non-secure';
 
@@ -17,17 +17,14 @@ const PromptBar: React.FC = () => {
   const handleGenerate = () => {
     if ((!inputText.trim() && attachments.length === 0) || state.isGenerating) return;
 
-    // 1. Dispatch generation start
     dispatch({ type: 'SET_GENERATING', payload: true });
     
-    // 2. Simulate API Call / Generation Process
     setTimeout(() => {
         dispatch({ type: 'SET_GENERATING', payload: false });
-        
-        // Mock result
         const mockImageUrl = "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=2400&q=80";
-        
         dispatch({ type: 'SET_IMAGE', payload: mockImageUrl });
+        dispatch({ type: 'SET_CANVAS_ZOOM', payload: 1 });
+        dispatch({ type: 'SET_CANVAS_PAN', payload: { x: 0, y: 0 } });
         
         dispatch({ 
             type: 'ADD_HISTORY', 
@@ -158,7 +155,6 @@ const StandardCanvas: React.FC = () => {
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [isPlaying, setIsPlaying] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   // Mode helpers
   const isGenerateText = state.mode === 'generate-text';
@@ -168,18 +164,14 @@ const StandardCanvas: React.FC = () => {
 
   // --- Handlers ---
 
-  const handleFitToScreen = useCallback(() => {
-     // Relative Fit: Reset zoom to 1 (which means "fit to container" via CSS)
+  const handleFitToScreen = useCallback((e?: React.MouseEvent) => {
+     if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+     }
      dispatch({ type: 'SET_CANVAS_PAN', payload: { x: 0, y: 0 } });
      dispatch({ type: 'SET_CANVAS_ZOOM', payload: 1 }); 
   }, [dispatch]);
-
-  // Initial fit on load
-  useEffect(() => {
-      if (state.uploadedImage) {
-          handleFitToScreen();
-      }
-  }, [state.uploadedImage, handleFitToScreen]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isGenerateText) return;
@@ -188,6 +180,7 @@ const StandardCanvas: React.FC = () => {
       const reader = new FileReader();
       reader.onload = (ev) => {
         dispatch({ type: 'SET_IMAGE', payload: ev.target?.result as string });
+        handleFitToScreen();
       };
       reader.readAsDataURL(file);
     }
@@ -202,13 +195,13 @@ const StandardCanvas: React.FC = () => {
        const reader = new FileReader();
       reader.onload = (ev) => {
         dispatch({ type: 'SET_IMAGE', payload: ev.target?.result as string });
+        handleFitToScreen();
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleZoom = (delta: number) => {
-    // Relative zoom: 1 = 100% fit, >1 = Zoom In, <1 = Zoom Out
     const newZoom = Math.max(0.1, Math.min(8, state.canvas.zoom * (1 - delta * 0.1)));
     dispatch({ type: 'SET_CANVAS_ZOOM', payload: newZoom });
   };
@@ -243,7 +236,6 @@ const StandardCanvas: React.FC = () => {
      transition: isPanning ? 'none' : 'transform 0.1s cubic-bezier(0.2, 0, 0.2, 1)'
   };
 
-  // --- Fullscreen View ---
   if (isFullscreen && state.uploadedImage) {
       return (
           <div className="fixed inset-0 z-[100] bg-background flex flex-col animate-fade-in">
@@ -256,7 +248,7 @@ const StandardCanvas: React.FC = () => {
                     <X size={20} className="text-foreground" />
                  </button>
               </div>
-              <div className="flex-1 overflow-hidden p-8 flex items-center justify-center bg-checkerboard">
+              <div className="flex-1 overflow-hidden p-8 flex items-center justify-center bg-black/5">
                   <img 
                       src={state.uploadedImage} 
                       className="max-w-full max-h-full w-auto h-auto object-contain shadow-2xl rounded-sm"
@@ -271,44 +263,13 @@ const StandardCanvas: React.FC = () => {
   return (
     <div className="flex-1 bg-[#F5F5F3] relative overflow-hidden flex flex-col h-full w-full">
        
-       {/* Confirmation Overlay */}
-       {showClearConfirm && (
-         <div className="absolute inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 animate-fade-in pointer-events-auto">
-             <div className="bg-surface-elevated p-6 rounded-2xl shadow-2xl border border-border max-w-sm w-full animate-scale-in">
-                 <div className="flex items-center gap-3 mb-4">
-                     <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
-                        <AlertTriangle size={20} />
-                     </div>
-                     <h3 className="text-lg font-bold text-foreground">Clear Canvas?</h3>
-                 </div>
-                 <p className="text-sm text-foreground-secondary mb-6 leading-relaxed">
-                     This will remove the current image and reset your view settings. This action cannot be undone.
-                 </p>
-                 <div className="flex gap-3">
-                     <button 
-                        onClick={() => setShowClearConfirm(false)} 
-                        className="flex-1 py-2.5 border border-border rounded-xl font-bold text-xs hover:bg-surface-sunken transition-colors"
-                     >
-                        Cancel
-                     </button>
-                     <button 
-                        onClick={() => { dispatch({ type: 'SET_IMAGE', payload: null }); setShowClearConfirm(false); }} 
-                        className="flex-1 py-2.5 bg-red-600 text-white rounded-xl font-bold text-xs hover:bg-red-700 shadow-md transition-all active:scale-95"
-                     >
-                        Yes, Clear
-                     </button>
-                 </div>
-             </div>
-         </div>
-       )}
-
-       {/* Canvas Toolbar (Show if image exists, regardless of mode) */}
        {state.uploadedImage && (
            <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-white/80 backdrop-blur border border-border/50 rounded-lg p-1 shadow-sm select-none transition-opacity hover:opacity-100 opacity-60">
               <button 
                  className="flex items-center gap-1 px-2 py-1 text-xs font-medium hover:bg-black/5 rounded text-foreground-secondary active:scale-95 transition-transform" 
-                 title="Fit to Screen"
+                 title="Fit to Screen (100%)"
                  onClick={handleFitToScreen}
+                 onMouseDown={(e) => e.stopPropagation()} 
               >
                  <Minimize2 size={14} /> Fit
               </button>
@@ -321,7 +282,11 @@ const StandardCanvas: React.FC = () => {
                        "flex items-center gap-1 px-2 py-1 text-xs font-medium rounded transition-colors active:scale-95",
                        state.workflow.canvasSync ? "bg-foreground text-background" : "hover:bg-black/5 text-foreground-secondary"
                      )}
-                     onClick={() => dispatch({ type: 'UPDATE_WORKFLOW', payload: { canvasSync: !state.workflow.canvasSync } })}
+                     onClick={(e) => {
+                        e.stopPropagation();
+                        dispatch({ type: 'UPDATE_WORKFLOW', payload: { canvasSync: !state.workflow.canvasSync } });
+                     }}
+                     onMouseDown={(e) => e.stopPropagation()} 
                    >
                       <Columns size={14} /> Split
                    </button>
@@ -330,23 +295,10 @@ const StandardCanvas: React.FC = () => {
            </div>
        )}
 
-       {/* Top Right Floating Actions (Clear) - Outside Transform Context */}
-       {state.uploadedImage && (
-           <div className="absolute top-4 right-4 z-20 pointer-events-auto animate-fade-in">
-              <button 
-                  onClick={() => setShowClearConfirm(true)}
-                  className="bg-white/90 backdrop-blur text-red-600 border border-red-200/50 hover:border-red-300 px-4 py-2.5 rounded-xl text-xs font-bold shadow-elevated hover:bg-red-50 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 group"
-              >
-                  <Trash2 size={16} className="group-hover:rotate-12 transition-transform" />
-                  <span>Clear</span>
-              </button>
-           </div>
-       )}
-
       <div 
          ref={containerRef}
          className={cn(
-            "flex-1 relative flex items-center justify-center bg-checkerboard overflow-hidden h-full w-full",
+            "flex-1 relative overflow-hidden h-full w-full select-none",
             isPanning ? "cursor-grabbing" : "cursor-grab"
          )}
          onWheel={handleWheel}
@@ -355,87 +307,86 @@ const StandardCanvas: React.FC = () => {
          onMouseUp={endPan}
          onMouseLeave={endPan}
       >
-         {/* Dot Grid Background */}
-         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
+         <div className="absolute inset-0 opacity-[0.05] pointer-events-none z-0" 
             style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '24px 24px' }} 
          />
 
          {state.uploadedImage ? (
-            // Wrap the transformable content in a container that fills the screen
-            // The transform style is applied here.
-            <div 
-               className="w-full h-full flex items-center justify-center origin-center pointer-events-auto"
-               style={transformStyle}
-            >
-               {showSplit ? (
-                  // Split View
-                  <div className="flex gap-1 bg-white border border-border p-2 shadow-2xl rounded-sm items-stretch max-w-[95%] max-h-[95%]">
-                     <div className="relative bg-surface-sunken">
-                        <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider text-foreground-muted bg-white px-2 py-1 rounded shadow-sm z-10">Original</span>
-                        <img 
-                           src={state.uploadedImage} 
-                           className="max-w-full max-h-full object-contain block select-none" 
-                           draggable={false}
-                        />
-                     </div>
-                     <div className="w-px bg-border-strong" />
-                     <div className="relative bg-surface-elevated">
-                        <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider text-accent bg-white px-2 py-1 rounded shadow-sm border border-accent/20 z-10">Preview</span>
-                        <img 
-                           src={state.uploadedImage} 
-                           className="max-w-full max-h-full object-contain block opacity-50 grayscale blur-sm select-none"
-                           draggable={false}
-                        />
-                     </div>
-                  </div>
-               ) : (
-                  // Single View
-                  <div className="relative group/image max-w-[90%] max-h-[90%] flex items-center justify-center">
-                     {isVideo ? (
-                        <div className="relative border-4 border-black rounded-xl overflow-hidden bg-black shadow-2xl">
-                           <img 
-                              src={state.uploadedImage} 
-                              alt="Video Frame" 
-                              className="max-w-full max-h-full object-contain block select-none opacity-80"
-                              draggable={false}
-                           />
-                           <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
-                              <button 
-                                onClick={(e) => { e.stopPropagation(); setIsPlaying(!isPlaying); }}
-                                className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-white/20 transition-all text-white border border-white/30 shadow-xl group-hover:scale-110"
-                              >
-                                {isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" className="ml-1" />}
-                              </button>
-                           </div>
-                        </div>
-                     ) : (
-                         <div className="relative group/image">
-                             <img 
-                                src={state.uploadedImage} 
-                                alt="Workspace" 
-                                className="max-w-full max-h-full object-contain block select-none shadow-xl rounded-sm"
-                                draggable={false}
-                                onClick={(e) => {
-                                   if (!isPanning) {
-                                       setIsFullscreen(true);
-                                   }
-                                }}
-                             />
-                             <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-0 group-hover/image:opacity-100 transition-opacity">
-                                <div className="bg-black/30 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1 shadow-lg">
-                                    <Maximize2 size={12} /> Click to Expand
-                                </div>
-                             </div>
-                        </div>
-                     )}
-                  </div>
-               )}
+            <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                <div 
+                   className="w-full h-full flex items-center justify-center origin-center pointer-events-auto"
+                   style={transformStyle}
+                >
+                   {showSplit ? (
+                      <div className="inline-flex gap-1 bg-white border border-border p-2 shadow-2xl rounded-sm items-stretch w-[95%] h-[95%]">
+                         <div className="relative bg-surface-sunken flex-1 overflow-hidden">
+                            <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider text-foreground-muted bg-white px-2 py-1 rounded shadow-sm z-10">Original</span>
+                            <img 
+                               src={state.uploadedImage} 
+                               className="w-full h-full object-contain block select-none" 
+                               draggable={false}
+                            />
+                         </div>
+                         <div className="w-px bg-border-strong" />
+                         <div className="relative bg-surface-elevated flex-1 overflow-hidden">
+                            <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider text-accent bg-white px-2 py-1 rounded shadow-sm border border-accent/20 z-10">Preview</span>
+                            <img 
+                               src={state.uploadedImage} 
+                               className="w-full h-full object-contain block opacity-50 grayscale blur-sm select-none"
+                               draggable={false}
+                            />
+                         </div>
+                      </div>
+                   ) : (
+                      <div className="relative w-full h-full flex items-center justify-center p-4">
+                         {isVideo ? (
+                            <div className="relative w-full h-full flex items-center justify-center">
+                               <div className="relative border-2 border-black/10 rounded-xl overflow-hidden bg-black shadow-2xl w-full h-full">
+                                   <img 
+                                      src={state.uploadedImage} 
+                                      alt="Video Frame" 
+                                      className="w-full h-full object-contain block select-none opacity-80"
+                                      draggable={false}
+                                   />
+                                   <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
+                                      <button 
+                                        onClick={(e) => { e.stopPropagation(); setIsPlaying(!isPlaying); }}
+                                        className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-white/20 transition-all text-white border border-white/30 shadow-xl hover:scale-110"
+                                      >
+                                        {isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" className="ml-1" />}
+                                      </button>
+                                   </div>
+                               </div>
+                            </div>
+                         ) : (
+                             <div className="relative w-full h-full flex items-center justify-center group/image">
+                                 <img 
+                                    src={state.uploadedImage} 
+                                    alt="Workspace" 
+                                    className="w-full h-full object-contain block select-none"
+                                    draggable={false}
+                                    onClick={(e) => {
+                                       e.stopPropagation();
+                                       if (!isPanning) {
+                                           setIsFullscreen(true);
+                                       }
+                                    }}
+                                 />
+                                 <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-0 group-hover/image:opacity-100 transition-opacity">
+                                    <div className="bg-black/30 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1 shadow-lg">
+                                        <Maximize2 size={12} /> Click to Expand
+                                    </div>
+                                 </div>
+                            </div>
+                         )}
+                      </div>
+                   )}
+                </div>
             </div>
          ) : (
-            // Empty State
             <div 
                className={cn(
-                  "relative z-10 flex flex-col items-center justify-center transition-all duration-500 pointer-events-auto",
+                  "absolute inset-0 z-10 flex flex-col items-center justify-center transition-all duration-500 pointer-events-auto",
                   !isGenerateText && isDragging ? "scale-105 opacity-50" : "scale-100 opacity-100"
                )}
                onDragOver={isGenerateText ? undefined : (e) => { e.preventDefault(); setIsDragging(true); }}
@@ -480,7 +431,6 @@ const StandardCanvas: React.FC = () => {
             </div>
          )}
 
-         {/* Generation Overlay */}
          {state.isGenerating && (
              <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/30 backdrop-blur-sm animate-fade-in pointer-events-none">
                  <div className="bg-white/90 p-8 rounded-3xl shadow-2xl flex flex-col items-center gap-4 border border-white/50">
@@ -507,7 +457,7 @@ export const ImageCanvas: React.FC = () => {
   if (state.mode === 'generate-text') {
       return (
         <div className="flex flex-col h-full bg-background w-full">
-           <div className="flex-1 relative overflow-hidden min-h-0">
+           <div className="flex-1 relative overflow-hidden min-h-0 flex flex-col">
                <StandardCanvas />
            </div>
            <div className="shrink-0 z-30 px-6 py-6 flex justify-center bg-background border-t border-border-subtle/50">
