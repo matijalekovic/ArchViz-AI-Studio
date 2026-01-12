@@ -9,6 +9,8 @@ export const BottomPanel: React.FC = () => {
   const { state, dispatch } = useAppStore();
   const prompt = generatePrompt(state);
 
+  if (state.mode === 'generate-text') return null;
+
   const showTimeline = state.mode === 'video' || state.mode === 'exploded';
   const showLegend = state.mode === 'masterplan';
   const showEditStack = state.mode === 'visual-edit';

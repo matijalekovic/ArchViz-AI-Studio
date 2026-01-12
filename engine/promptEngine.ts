@@ -1,13 +1,13 @@
-
 import { AppState, StyleConfiguration } from '../types';
 
 export const BUILT_IN_STYLES: StyleConfiguration[] = [
+  // --- ARCHITECTURAL STYLES (ORIGINAL SET) ---
   {
     id: 'contemporary-minimalist',
     name: 'Contemporary Minimalist',
     category: 'Residential',
     description: 'Clean lines, neutral palettes, emphasis on light and space',
-    previewUrl: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+    previewUrl: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=600&q=80',
     promptBundle: {
       architectureVocabulary: ['clean lines', 'minimal ornamentation', 'open plan', 'floating planes', 'cubic forms'],
       materialBias: {
@@ -28,7 +28,7 @@ export const BUILT_IN_STYLES: StyleConfiguration[] = [
     name: 'Neo-Brutalist',
     category: 'Cultural',
     description: 'Raw concrete, massive forms, honest materiality',
-    previewUrl: 'linear-gradient(135deg, #434343 0%, #000000 100%)',
+    previewUrl: 'https://images.unsplash.com/photo-1533630764724-5c9a633a6967?auto=format&fit=crop&w=600&q=80',
     promptBundle: {
       architectureVocabulary: ['massive forms', 'monolithic', 'geometric', 'raw materiality', 'heavy volumes'],
       materialBias: {
@@ -49,7 +49,7 @@ export const BUILT_IN_STYLES: StyleConfiguration[] = [
     name: 'Parametric Fluidity',
     category: 'Conceptual',
     description: 'Organic forms, flowing geometries, computational aesthetics',
-    previewUrl: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
+    previewUrl: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=600&q=80',
     promptBundle: {
       architectureVocabulary: ['organic curves', 'parametric facade', 'flowing geometry', 'biomimetic', 'voronoi pattern'],
       materialBias: {
@@ -70,7 +70,7 @@ export const BUILT_IN_STYLES: StyleConfiguration[] = [
     name: 'Modern Vernacular',
     category: 'Residential',
     description: 'Local materials, traditional forms, modern interpretation',
-    previewUrl: 'linear-gradient(135deg, #e6b980 0%, #eacda3 100%)',
+    previewUrl: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80',
     promptBundle: {
       architectureVocabulary: ['gabled roof', 'local adaptation', 'warm tones', 'tactile', 'pitched roof'],
       materialBias: {
@@ -91,7 +91,7 @@ export const BUILT_IN_STYLES: StyleConfiguration[] = [
     name: 'Scandinavian',
     category: 'Residential',
     description: 'Hygge, light woods, functional simplicity, cozy',
-    previewUrl: 'linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%)',
+    previewUrl: 'https://images.unsplash.com/photo-1595515106967-14348984f548?auto=format&fit=crop&w=600&q=80',
     promptBundle: {
       architectureVocabulary: ['simple forms', 'functionalism', 'hygge', 'connection to nature'],
       materialBias: {
@@ -112,7 +112,7 @@ export const BUILT_IN_STYLES: StyleConfiguration[] = [
     name: 'Industrial Loft',
     category: 'Commercial',
     description: 'Exposed structure, brick, metal, repurposed spaces',
-    previewUrl: 'linear-gradient(135deg, #868f96 0%, #596164 100%)',
+    previewUrl: 'https://images.unsplash.com/photo-1623631484762-b9b53239a3f2?auto=format&fit=crop&w=600&q=80',
     promptBundle: {
       architectureVocabulary: ['adaptive reuse', 'open ceilings', 'large windows', 'structural honesty'],
       materialBias: {
@@ -133,7 +133,7 @@ export const BUILT_IN_STYLES: StyleConfiguration[] = [
     name: 'Biophilic Design',
     category: 'Sustainable',
     description: 'Integration of nature, living walls, natural light',
-    previewUrl: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+    previewUrl: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=600&q=80',
     promptBundle: {
       architectureVocabulary: ['vertical gardens', 'indoor-outdoor flow', 'organic patterns', 'nature integration'],
       materialBias: {
@@ -154,7 +154,7 @@ export const BUILT_IN_STYLES: StyleConfiguration[] = [
     name: 'Mid-Century Modern',
     category: 'Residential',
     description: 'Retro-futurism, organic curves, contrasting textures',
-    previewUrl: 'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)',
+    previewUrl: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=600&q=80',
     promptBundle: {
       architectureVocabulary: ['cantilevered', 'flat planes', 'integration with landscape', 'retro aesthetic'],
       materialBias: {
@@ -175,7 +175,7 @@ export const BUILT_IN_STYLES: StyleConfiguration[] = [
     name: 'Japanese Zen',
     category: 'Cultural',
     description: 'Minimalism, natural materials, shadow and light, serenity',
-    previewUrl: 'linear-gradient(135deg, #e6dada 0%, #274046 100%)',
+    previewUrl: 'https://images.unsplash.com/photo-1522771759335-5028489708b7?auto=format&fit=crop&w=600&q=80',
     promptBundle: {
       architectureVocabulary: ['engawa', 'shoji screens', 'minimalist', 'connection to garden'],
       materialBias: {
@@ -196,7 +196,7 @@ export const BUILT_IN_STYLES: StyleConfiguration[] = [
     name: 'Cyberpunk',
     category: 'Conceptual',
     description: 'High-tech low-life, neon, dystopian, metallic',
-    previewUrl: 'linear-gradient(135deg, #cc2b5e 0%, #753a88 100%)',
+    previewUrl: 'https://images.unsplash.com/photo-1515630278258-407f66498911?auto=format&fit=crop&w=600&q=80',
     promptBundle: {
       architectureVocabulary: ['megastructure', 'dense urban', 'high-tech', 'dystopian'],
       materialBias: {
@@ -217,7 +217,7 @@ export const BUILT_IN_STYLES: StyleConfiguration[] = [
     name: 'Bauhaus',
     category: 'Cultural',
     description: 'Form follows function, primary colors, simple geometry',
-    previewUrl: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    previewUrl: 'https://images.unsplash.com/photo-1589923188900-85dae5233271?auto=format&fit=crop&w=600&q=80',
     promptBundle: {
       architectureVocabulary: ['geometric', 'functionalism', 'asymmetry', 'industrial'],
       materialBias: {
@@ -238,7 +238,7 @@ export const BUILT_IN_STYLES: StyleConfiguration[] = [
     name: 'Tropical Modernism',
     category: 'Residential',
     description: 'Open air, overhangs, concrete and wood, lush context',
-    previewUrl: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)',
+    previewUrl: 'https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?auto=format&fit=crop&w=600&q=80',
     promptBundle: {
       architectureVocabulary: ['large overhangs', 'passive ventilation', 'open spaces', 'breeze blocks'],
       materialBias: {
@@ -259,7 +259,7 @@ export const BUILT_IN_STYLES: StyleConfiguration[] = [
     name: 'Alpine Chalet',
     category: 'Residential',
     description: 'Modern mountain home, snow, timber, warmth',
-    previewUrl: 'linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)',
+    previewUrl: 'https://images.unsplash.com/photo-1518732679287-35359b32975e?auto=format&fit=crop&w=600&q=80',
     promptBundle: {
       architectureVocabulary: ['steep roof', 'panoramic windows', 'mountain retreat'],
       materialBias: {
@@ -280,7 +280,7 @@ export const BUILT_IN_STYLES: StyleConfiguration[] = [
     name: 'Desert Modernism',
     category: 'Residential',
     description: 'Blending with arid landscape, earth tones, horizontal lines',
-    previewUrl: 'linear-gradient(135deg, #d299c2 0%, #fef9d7 100%)',
+    previewUrl: 'https://images.unsplash.com/photo-1523677462372-748980892095?auto=format&fit=crop&w=600&q=80',
     promptBundle: {
       architectureVocabulary: ['horizontal planes', 'earth shelter', 'arid landscape', 'shadow patterns'],
       materialBias: {
@@ -293,261 +293,61 @@ export const BUILT_IN_STYLES: StyleConfiguration[] = [
         avoid: ['diffused mist']
       },
       cameraBias: { preferredAngles: ['eye-level'], preferredFraming: ['wide landscape'] },
-      renderingLanguage: { quality: ['high contrast'], atmosphere: ['dry', 'hot', 'silent'], detail: ['rock textures'] }
-    }
-  },
-  {
-    id: 'art-deco',
-    name: 'Art Deco Revival',
-    category: 'Cultural',
-    description: 'Geometric patterns, luxury materials, verticality, gold',
-    previewUrl: 'linear-gradient(135deg, #c79081 0%, #dfa579 100%)',
-    promptBundle: {
-      architectureVocabulary: ['stepped setbacks', 'geometric ornamentation', 'verticality', 'streamline'],
-      materialBias: {
-        primary: ['limestone', 'black marble', 'gold leaf'],
-        secondary: ['brass', 'velvet', 'glossy lacquer'],
-        avoid: ['minimalism', 'rustic']
-      },
-      lightingBias: {
-        preferred: ['dramatic up-lighting', 'warm glow'],
-        avoid: ['flat fluorescent']
-      },
-      cameraBias: { preferredAngles: ['low angle', 'symmetrical'], preferredFraming: ['imposing'] },
-      renderingLanguage: { quality: ['luxurious'], atmosphere: ['glamorous', 'opulent'], detail: ['intricate patterns'] }
-    }
-  },
-  {
-    id: 'gothic-revival',
-    name: 'Modern Gothic',
-    category: 'Cultural',
-    description: 'Verticality, pointed arches, stone, dramatic light, reimagined',
-    previewUrl: 'linear-gradient(135deg, #20002c 0%, #cbb4d4 100%)',
-    promptBundle: {
-      architectureVocabulary: ['pointed arches', 'ribbed vaults', 'flying buttresses', 'verticality'],
-      materialBias: {
-        primary: ['dark stone', 'stained glass', 'iron'],
-        secondary: ['glass', 'concrete'],
-        avoid: ['horizontal lines', 'white plaster']
-      },
-      lightingBias: {
-        preferred: ['god rays', 'mysterious shadows'],
-        avoid: ['bright even light']
-      },
-      cameraBias: { preferredAngles: ['looking up', 'interior nave'], preferredFraming: ['vertical'] },
-      renderingLanguage: { quality: ['ethereal'], atmosphere: ['mysterious', 'sublime', 'epic'], detail: ['intricate stone'] }
-    }
-  },
-  {
-    id: 'high-tech',
-    name: 'High-Tech',
-    category: 'Commercial',
-    description: 'Structural expression, transparency, lightweight, engineered',
-    previewUrl: 'linear-gradient(135deg, #acb6e5 0%, #86fde8 100%)',
-    promptBundle: {
-      architectureVocabulary: ['exposed structure', 'tension cables', 'transparency', 'prefabrication'],
-      materialBias: {
-        primary: ['steel', 'glass', 'aluminum'],
-        secondary: ['chrome', 'plastic'],
-        avoid: ['heavy masonry', 'wood']
-      },
-      lightingBias: {
-        preferred: ['cool daylight', 'technical lighting'],
-        avoid: ['warm cozy']
-      },
-      cameraBias: { preferredAngles: ['worm-eye', 'detail'], preferredFraming: ['dynamic'] },
-      renderingLanguage: { quality: ['sharp'], atmosphere: ['precise', 'engineered', 'futuristic'], detail: ['connections', 'bolts'] }
-    }
-  },
-  {
-    id: 'eco-brutalism',
-    name: 'Eco-Brutalism',
-    category: 'Sustainable',
-    description: 'Concrete structures reclaimed by nature, apocalyptic green',
-    previewUrl: 'linear-gradient(135deg, #134e5e 0%, #71b280 100%)',
-    promptBundle: {
-      architectureVocabulary: ['massive concrete', 'overgrown vegetation', 'ruins aesthetic', 'reclaimed'],
-      materialBias: {
-        primary: ['weathered concrete', 'moss', 'vines'],
-        secondary: ['rust', 'water'],
-        avoid: ['pristine surfaces', 'glass']
-      },
-      lightingBias: {
-        preferred: ['overcast', 'filtered light'],
-        avoid: ['bright sunny']
-      },
-      cameraBias: { preferredAngles: ['eye-level'], preferredFraming: ['nature dominant'] },
-      renderingLanguage: { quality: ['cinematic', 'unreal engine'], atmosphere: ['melancholic', 'peaceful', 'post-apocalyptic'], detail: ['weathering', 'plants'] }
-    }
-  },
-  {
-    id: 'mediterranean',
-    name: 'Mediterranean',
-    category: 'Residential',
-    description: 'White stucco, terracotta, arches, sunny, seaside',
-    previewUrl: 'linear-gradient(135deg, #2980b9 0%, #6dd5fa 100%, #ffffff 100%)',
-    promptBundle: {
-      architectureVocabulary: ['arches', 'courtyards', 'tiled roofs', 'stucco walls'],
-      materialBias: {
-        primary: ['white plaster', 'terracotta tiles', 'stone'],
-        secondary: ['wrought iron', 'mosaic', 'wood beams'],
-        avoid: ['steel', 'exposed concrete']
-      },
-      lightingBias: {
-        preferred: ['bright sunlight', 'blue shadows'],
-        avoid: ['grey skies']
-      },
-      cameraBias: { preferredAngles: ['eye-level'], preferredFraming: ['inviting'] },
-      renderingLanguage: { quality: ['vibrant'], atmosphere: ['relaxed', 'sunny', 'vacation'], detail: ['texture'] }
-    }
-  },
-  {
-    id: 'solarpunk',
-    name: 'Solarpunk',
-    category: 'Sustainable',
-    description: 'Optimistic future, technology + nature, sustainable, Art Nouveau influences',
-    previewUrl: 'linear-gradient(135deg, #a8ff78 0%, #78ffd6 100%)',
-    promptBundle: {
-      architectureVocabulary: ['organic shapes', 'stained glass', 'solar panels', 'vertical farming', 'art nouveau curves'],
-      materialBias: {
-        primary: ['glass', 'wood', 'ceramics'],
-        secondary: ['plants', 'solar tech'],
-        avoid: ['dystopian dirt', 'brutalism']
-      },
-      lightingBias: {
-        preferred: ['bright sunny', 'shimmering'],
-        avoid: ['darkness']
-      },
-      cameraBias: { preferredAngles: ['wide'], preferredFraming: ['utopian'] },
-      renderingLanguage: { quality: ['illustrative realism'], atmosphere: ['optimistic', 'hopeful', 'bright'], detail: ['plants', 'tech'] }
-    }
-  },
-  {
-    id: 'deconstructivism',
-    name: 'Deconstructivism',
-    category: 'Conceptual',
-    description: 'Fragmentation, non-rectilinear shapes, distorted chaos',
-    previewUrl: 'linear-gradient(135deg, #232526 0%, #414345 100%)',
-    promptBundle: {
-      architectureVocabulary: ['fragmented', 'distorted', 'non-linear', 'controlled chaos'],
-      materialBias: {
-        primary: ['titanium', 'steel', 'glass'],
-        secondary: ['concrete', 'mesh'],
-        avoid: ['symmetry', 'traditional forms']
-      },
-      lightingBias: {
-        preferred: ['dynamic', 'high contrast'],
-        avoid: ['flat']
-      },
-      cameraBias: { preferredAngles: ['dynamic', 'tilted'], preferredFraming: ['disorienting'] },
-      renderingLanguage: { quality: ['abstract'], atmosphere: ['provocative', 'intense'], detail: ['sharp angles'] }
+      renderingLanguage: { quality: ['high contrast'], atmosphere: ['dry', 'hot', 'silent'], detail: ['sand grains', 'heat haze'] }
     }
   }
 ];
 
 export function generatePrompt(state: AppState): string {
-  const style = BUILT_IN_STYLES.find(s => s.id === state.activeStyleId) || BUILT_IN_STYLES[0];
-  const { geometry, camera, lighting, materials, context, workflow, mode } = state;
-  const parts: string[] = [];
-
-  // --- Helper to add weights ---
-  const add = (text: string, weight?: number) => {
-    if (weight && weight !== 1.0) parts.push(`(${text}:${weight})`);
-    else parts.push(text);
-  };
-
-  // --- MODE SPECIFIC HEADER ---
-  switch (mode) {
-    case 'masterplan':
-      add(`Masterplan visualization, ${workflow.mpPlanType} scale`);
-      add(`${workflow.mpOutputType} style`);
-      if (workflow.mpContext.loadRoads) add("showing infrastructure network");
-      if (workflow.mpContext.loadWater) add("integrating water bodies");
-      // Zoning Colors
-      const activeZones = workflow.mpZones.filter(z => z.selected).map(z => z.name).join(', ');
-      if (activeZones) add(`featuring zones: ${activeZones}`);
-      break;
-
-    case 'render-cad':
-      add(`Architectural ${workflow.cadDrawingType}`);
-      add(`Scale ${workflow.cadScale}`);
-      add("precise linework, technical drawing");
-      if (workflow.cadDrawingType === 'plan') add("floor plan view, orthographic");
-      break;
-
-    case 'exploded':
-      add("Axonometric exploded view");
-      add("architectural assembly diagram");
-      add("separated components floating");
-      if (workflow.explodedStyle.render === 'tech') add("technical blueprint style, white lines on blue");
-      break;
-
-    case 'section':
-      add(`Architectural section cut, ${workflow.sectionCut.type} cut`);
-      if (workflow.sectionStyle.poche === 'black') add("solid black poche");
-      add("detailed interior section");
-      break;
-
-    case 'visual-edit':
-      add(`Image editing: ${workflow.activeTool} operation`);
-      add(`Selection mode: ${workflow.visualSelection.mode}`);
-      break;
-
-    default: // render-3d, render-sketch, etc.
-      add(`Architecture featuring ${style.promptBundle.architectureVocabulary.join(', ')}`);
-      break;
-  }
-
-  // --- CORE ATTRIBUTES (Applied to all visual modes) ---
-  if (mode !== 'video' && mode !== 'upscale') {
-    // 1. Materials
-    if (mode === 'render-cad') {
-       add('monochrome, technical colors');
-    } else {
-       add(`Materials: ${style.promptBundle.materialBias.primary.join(', ')}`);
-       if (materials.concreteEmphasis > 60) add('emphasize concrete texture', 1.2);
-       if (materials.glassEmphasis > 60) add('emphasize glass transparency', 1.2);
-    }
-
-    // 2. Lighting
-    if (mode === 'masterplan' && workflow.mpOutputType === 'diagrammatic') {
-       add('flat even lighting, no shadows');
-    } else {
-       add(`${lighting.timeOfDay} lighting`);
-       add(`Sun altitude ${lighting.sunAltitude} degrees`);
-       if (lighting.weather !== 'clear') add(`${lighting.weather} weather`);
-    }
-
-    // 3. Camera
-    if (mode === 'render-3d' || mode === 'render-sketch') {
-       add(`${camera.viewType} view`);
-       if (camera.projection === 'axonometric') add('isometric projection');
-    }
-  }
-
-  // --- MODE SPECIFIC TAIL ---
-  switch (mode) {
-    case 'video':
-      add(`Cinematic camera movement: ${workflow.videoState.camera.type}`);
-      if (workflow.videoState.inputMode === 'camera-path') add('smooth flythrough path');
-      if (workflow.videoState.scenario) add(workflow.videoState.scenario);
-      add('video sequence, motion blur');
-      break;
-    
-    case 'img-to-cad':
-      add('high contrast, edge detection');
-      add('black and white vector lines');
-      break;
-  }
-
-  // --- GLOBAL QUALIFIERS ---
-  if (mode !== 'render-cad' && mode !== 'img-to-cad') {
-     add(style.promptBundle.renderingLanguage.quality.join(', '));
-     add('8k resolution');
-  }
-
-  // --- NEGATIVE INFLUENCES (Implicit) ---
-  if (geometry.suppressHallucinations) add('no artifacts, no blurry details', 1.2);
+  const { workflow, activeStyleId, lighting, context, materials, camera } = state;
   
-  return parts.join(', ');
+  // If user provided a specific text prompt in text-to-image mode or visual edit, prioritize it or combine it.
+  if (state.mode === 'generate-text' && workflow.textPrompt) {
+     return workflow.textPrompt;
+  }
+  
+  if (state.mode === 'visual-edit' && workflow.visualPrompt) {
+     return workflow.visualPrompt;
+  }
+
+  // Find active style
+  const style = BUILT_IN_STYLES.find(s => s.id === activeStyleId);
+  
+  let promptParts: string[] = [];
+
+  // 1. Base Prompt / Subject
+  if (state.prompt) {
+    promptParts.push(state.prompt);
+  } else if (style) {
+    promptParts.push(`A ${style.name.toLowerCase()} architectural rendering`);
+  } else {
+    promptParts.push('Architectural rendering');
+  }
+
+  // 2. Style Specifics
+  if (style) {
+    const { architectureVocabulary, materialBias } = style.promptBundle;
+    promptParts.push(`Architecture: ${architectureVocabulary.slice(0, 3).join(', ')}.`);
+    promptParts.push(`Materials: ${materialBias.primary.join(', ')} and ${materialBias.secondary.slice(0, 2).join(', ')}.`);
+  }
+
+  // 3. Lighting
+  promptParts.push(`Lighting: ${lighting.timeOfDay}, ${lighting.weather}, ${lighting.cloudType} sky.`);
+
+  // 4. Context
+  if (context.vegetation) {
+    promptParts.push(`Surroundings: ${context.vegetationDensity > 50 ? 'dense' : 'sparse'} ${context.season} vegetation.`);
+  }
+  if (context.people) {
+    promptParts.push('Includes people.');
+  }
+
+  // 5. Camera/Technical
+  promptParts.push(`View: ${camera.viewType}, ${camera.projection} projection.`);
+  promptParts.push('High quality, photorealistic, 8k.');
+
+  // Manual Adjustments from Workflow (e.g. materials emphasis)
+  if (materials.concreteEmphasis > 70) promptParts.push('emphasizing concrete textures');
+  
+  return promptParts.join(' ');
 }

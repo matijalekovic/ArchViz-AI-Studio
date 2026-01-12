@@ -31,10 +31,14 @@ const initialVideoState: VideoState = {
     zoom: 100,
   },
 
+  keyframes: [],
   generatedVideoUrl: null,
 };
 
 const initialWorkflow: WorkflowSettings = {
+  // 0. Text to Image
+  textPrompt: '',
+
   // 1. 3D to Render
   sourceType: 'rhino',
   viewType: 'exterior',
@@ -267,7 +271,7 @@ const initialCanvas: CanvasState = {
 };
 
 const initialState: AppState = {
-  mode: 'render-3d',
+  mode: 'generate-text', // CHANGED: Set to 'generate-text' for default starting tab
   activeStyleId: 'contemporary-minimalist',
   uploadedImage: null,
   isGenerating: false,
@@ -275,6 +279,7 @@ const initialState: AppState = {
   prompt: '',
   workflow: initialWorkflow,
   materialValidation: initialMaterialValidation,
+  chatMessages: [],
   geometry: initialGeometry,
   camera: initialCamera,
   lighting: initialLighting,
@@ -311,6 +316,16 @@ function appReducer(state: AppState, action: Action): AppState {
 
     // Material Validation Reducer
     case 'UPDATE_MATERIAL_VALIDATION': return { ...state, materialValidation: { ...state.materialValidation, ...action.payload } };
+
+    // Chat Reducers
+    case 'ADD_CHAT_MESSAGE': return { ...state, chatMessages: [...state.chatMessages, action.payload] };
+    case 'UPDATE_CHAT_MESSAGE': 
+      return { 
+        ...state, 
+        chatMessages: state.chatMessages.map(msg => 
+          msg.id === action.payload.id ? { ...msg, ...action.payload.updates } : msg
+        ) 
+      };
 
     case 'UPDATE_GEOMETRY': return { ...state, geometry: { ...state.geometry, ...action.payload } };
     case 'UPDATE_CAMERA': return { ...state, camera: { ...state.camera, ...action.payload } };

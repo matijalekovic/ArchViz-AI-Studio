@@ -108,10 +108,10 @@ export const StyleBrowserDialog: React.FC<StyleBrowserDialogProps> = ({
                         : "border-border hover:border-foreground-muted hover:shadow-sm hover:scale-[1.01]"
                      )}
                   >
-                     {/* Preview Gradient */}
+                     {/* Preview Image */}
                      <div 
-                     className="absolute inset-0 opacity-80 transition-transform duration-700 group-hover:scale-105" 
-                     style={{ background: style.previewUrl }} 
+                        className="absolute inset-0 opacity-90 transition-transform duration-700 group-hover:scale-105 bg-cover bg-center" 
+                        style={{ backgroundImage: `url(${style.previewUrl})` }} 
                      />
                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
                      

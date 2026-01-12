@@ -1,35 +1,200 @@
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { useAppStore } from '../../../store';
-import { UploadCloud, Columns, Minimize2, MoveHorizontal, Move, AlertCircle, Play, Pause, RefreshCw } from 'lucide-react';
+import { UploadCloud, Columns, Minimize2, MoveHorizontal, Move, AlertCircle, Play, Pause, RefreshCw, Send, Paperclip, Image as ImageIcon, Plus, Bot, User, Trash2, Sparkles, X, ChevronDown, Download, Wand2, Maximize2, ZoomIn, AlertTriangle, Eraser } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { nanoid } from 'nanoid/non-secure';
 
-export const ImageCanvas: React.FC = () => {
+// --- Floating Prompt Bar Component ---
+
+const PromptBar: React.FC = () => {
+  const { state, dispatch } = useAppStore();
+  const [inputText, setInputText] = useState('');
+  const [attachments, setAttachments] = useState<string[]>([]); 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleGenerate = () => {
+    if ((!inputText.trim() && attachments.length === 0) || state.isGenerating) return;
+
+    // 1. Dispatch generation start
+    dispatch({ type: 'SET_GENERATING', payload: true });
+    
+    // 2. Simulate API Call / Generation Process
+    setTimeout(() => {
+        dispatch({ type: 'SET_GENERATING', payload: false });
+        
+        // Mock result
+        const mockImageUrl = "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=2400&q=80";
+        
+        dispatch({ type: 'SET_IMAGE', payload: mockImageUrl });
+        
+        dispatch({ 
+            type: 'ADD_HISTORY', 
+            payload: {
+                id: nanoid(),
+                timestamp: Date.now(),
+                thumbnail: mockImageUrl,
+                prompt: inputText,
+                mode: state.mode
+            }
+        });
+
+    }, 3000);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleGenerate();
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files) as File[];
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          if (ev.target?.result) {
+            setAttachments(prev => [...prev, ev.target!.result as string]);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setInputText(e.target.value);
+      e.target.style.height = 'auto';
+      e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+  };
+
+  return (
+    <div className="w-full max-w-2xl pointer-events-auto transform transition-all duration-300 hover:scale-[1.005]">
+        <div className={cn(
+            "bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/60 ring-1 ring-black/5 flex flex-col overflow-hidden transition-shadow duration-300",
+            (inputText || attachments.length > 0) ? "shadow-2xl ring-black/10 bg-white" : "hover:bg-white/95"
+        )}>
+            {attachments.length > 0 && (
+                <div className="flex gap-3 px-4 pt-4 pb-1 overflow-x-auto custom-scrollbar">
+                    {attachments.map((att, idx) => (
+                        <div key={idx} className="relative group w-14 h-14 shrink-0 animate-scale-in">
+                            <img src={att} className="w-full h-full object-cover rounded-xl border border-black/10 shadow-sm" />
+                            <button 
+                                onClick={() => removeAttachment(idx)}
+                                className="absolute -top-1.5 -right-1.5 bg-white text-foreground border border-border rounded-full p-0.5 shadow-md opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50 hover:text-red-600 hover:scale-110 z-10"
+                            >
+                                <X size={12} />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            <div className="flex items-end gap-1 p-2 pl-3">
+                <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-3 text-foreground-muted hover:text-foreground hover:bg-surface-sunken rounded-full transition-all shrink-0 active:scale-95"
+                    title="Add Reference Image"
+                >
+                    <Plus size={20} strokeWidth={2.5} />
+                </button>
+                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" multiple onChange={handleFileSelect} />
+                
+                <textarea
+                    ref={textareaRef}
+                    value={inputText}
+                    onChange={handleInput}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Describe your architectural vision..."
+                    className="flex-1 bg-transparent border-0 focus:ring-0 resize-none py-3.5 px-2 max-h-[140px] text-[15px] leading-relaxed custom-scrollbar placeholder:text-foreground-muted/60 font-medium text-foreground"
+                    rows={1}
+                />
+                
+                <button 
+                    onClick={handleGenerate}
+                    disabled={(!inputText.trim() && attachments.length === 0) || state.isGenerating}
+                    className={cn(
+                        "p-3 rounded-full transition-all shrink-0 mb-0.5 flex items-center justify-center relative overflow-hidden group",
+                        (!inputText.trim() && attachments.length === 0) || state.isGenerating
+                            ? "bg-transparent text-foreground-muted"
+                            : "bg-foreground text-background shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+                    )}
+                >
+                    {state.isGenerating ? (
+                        <RefreshCw size={20} className="animate-spin" />
+                    ) : (
+                        <div className="relative">
+                            <Sparkles size={20} className={cn((inputText || attachments.length > 0) && "text-accent fill-accent animate-pulse-subtle")} />
+                        </div>
+                    )}
+                </button>
+            </div>
+        </div>
+        <div className="text-center mt-3 opacity-0 hover:opacity-100 transition-opacity duration-500">
+            <span className="text-[10px] text-foreground-muted/50 font-medium tracking-wide">
+                Press Enter to Generate
+            </span>
+        </div>
+    </div>
+  );
+};
+
+// --- Standard Image Canvas ---
+
+const StandardCanvas: React.FC = () => {
   const { state, dispatch } = useAppStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const imgRef = useRef<HTMLImageElement>(null);
   
   const [isDragging, setIsDragging] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+
+  // Mode helpers
+  const isGenerateText = state.mode === 'generate-text';
+  const isVideo = state.mode === 'video';
+  const showCompare = state.workflow.videoState?.compareMode || state.mode === 'upscale';
+  const showSplit = state.workflow.canvasSync && !isVideo && !showCompare;
 
   // --- Handlers ---
 
+  const handleFitToScreen = useCallback(() => {
+     // Relative Fit: Reset zoom to 1 (which means "fit to container" via CSS)
+     dispatch({ type: 'SET_CANVAS_PAN', payload: { x: 0, y: 0 } });
+     dispatch({ type: 'SET_CANVAS_ZOOM', payload: 1 }); 
+  }, [dispatch]);
+
+  // Initial fit on load
+  useEffect(() => {
+      if (state.uploadedImage) {
+          handleFitToScreen();
+      }
+  }, [state.uploadedImage, handleFitToScreen]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isGenerateText) return;
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (ev) => {
         dispatch({ type: 'SET_IMAGE', payload: ev.target?.result as string });
-        handleFitToScreen();
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleDrop = (e: React.DragEvent) => {
+    if (isGenerateText) return;
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
@@ -37,13 +202,13 @@ export const ImageCanvas: React.FC = () => {
        const reader = new FileReader();
       reader.onload = (ev) => {
         dispatch({ type: 'SET_IMAGE', payload: ev.target?.result as string });
-        handleFitToScreen();
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleZoom = (delta: number) => {
+    // Relative zoom: 1 = 100% fit, >1 = Zoom In, <1 = Zoom Out
     const newZoom = Math.max(0.1, Math.min(8, state.canvas.zoom * (1 - delta * 0.1)));
     dispatch({ type: 'SET_CANVAS_ZOOM', payload: newZoom });
   };
@@ -73,71 +238,115 @@ export const ImageCanvas: React.FC = () => {
     setIsPanning(false);
   };
 
-  const handleFitToScreen = useCallback(() => {
-     if (containerRef.current) {
-        dispatch({ type: 'SET_CANVAS_PAN', payload: { x: 0, y: 0 } });
-        dispatch({ type: 'SET_CANVAS_ZOOM', payload: 0.8 }); 
-     }
-  }, [dispatch]);
-
-  const isDualViewMode = ['render-3d', 'render-cad', 'render-sketch'].includes(state.mode);
-  const showSplit = isDualViewMode && state.workflow.canvasSync;
-  const isCompare = state.mode === 'upscale' || state.workflow.videoState?.compareMode;
-  const isVideo = state.mode === 'video';
-
   const transformStyle = {
      transform: `translate(${state.canvas.pan.x}px, ${state.canvas.pan.y}px) scale(${state.canvas.zoom})`,
-     transition: isPanning ? 'none' : 'transform 0.1s ease-out'
+     transition: isPanning ? 'none' : 'transform 0.1s cubic-bezier(0.2, 0, 0.2, 1)'
   };
 
+  // --- Fullscreen View ---
+  if (isFullscreen && state.uploadedImage) {
+      return (
+          <div className="fixed inset-0 z-[100] bg-background flex flex-col animate-fade-in">
+              <div className="absolute top-4 right-4 z-50 flex gap-2">
+                 <button 
+                    onClick={() => setIsFullscreen(false)}
+                    className="p-3 bg-surface-elevated/90 backdrop-blur rounded-full shadow-lg border border-border hover:bg-surface-sunken transition-all"
+                    title="Close Fullscreen (Esc)"
+                 >
+                    <X size={20} className="text-foreground" />
+                 </button>
+              </div>
+              <div className="flex-1 overflow-hidden p-8 flex items-center justify-center bg-checkerboard">
+                  <img 
+                      src={state.uploadedImage} 
+                      className="max-w-full max-h-full w-auto h-auto object-contain shadow-2xl rounded-sm"
+                      onClick={() => setIsFullscreen(false)}
+                      title="Click to close"
+                  />
+              </div>
+          </div>
+      );
+  }
+
   return (
-    <div className="flex-1 bg-[#E5E5E5] relative overflow-hidden flex flex-col">
-       {/* Canvas Toolbar */}
-       <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-surface-elevated/90 backdrop-blur border border-border rounded-lg p-1 shadow-sm select-none">
-          <button 
-             className="flex items-center gap-1 px-2 py-1 text-xs font-medium hover:bg-surface-sunken rounded text-foreground-secondary active:scale-95 transition-transform" 
-             title="Fit to Screen (Reset View)"
-             onClick={handleFitToScreen}
-          >
-             <Minimize2 size={14} /> Fit
-          </button>
-          
-          {isDualViewMode && (
-             <>
-               <div className="w-px h-4 bg-border" />
-               <button 
-                 className={cn(
-                   "flex items-center gap-1 px-2 py-1 text-xs font-medium rounded transition-colors active:scale-95",
-                   state.workflow.canvasSync ? "bg-accent text-white" : "hover:bg-surface-sunken text-foreground-secondary"
-                 )}
-                 onClick={() => dispatch({ type: 'UPDATE_WORKFLOW', payload: { canvasSync: !state.workflow.canvasSync } })}
-                 title="Toggle Side-by-Side View"
-               >
-                  <Columns size={14} /> {state.workflow.canvasSync ? 'Split' : 'Single'}
-               </button>
-             </>
-          )}
-          
-          {isCompare && (
-             <>
-               <div className="w-px h-4 bg-border" />
-               <button 
-                 className={cn(
-                   "flex items-center gap-1 px-2 py-1 text-xs font-medium rounded transition-colors",
-                   state.workflow.compareMode ? "bg-accent text-white" : "hover:bg-surface-sunken text-foreground-secondary"
-                 )}
-                 onClick={() => dispatch({ type: 'UPDATE_VIDEO_STATE', payload: { compareMode: !state.workflow.videoState.compareMode } })}
-               >
-                  <MoveHorizontal size={14} /> Compare
-               </button>
-             </>
-          )}
-       </div>
+    <div className="flex-1 bg-[#F5F5F3] relative overflow-hidden flex flex-col h-full w-full">
+       
+       {/* Confirmation Overlay */}
+       {showClearConfirm && (
+         <div className="absolute inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 animate-fade-in pointer-events-auto">
+             <div className="bg-surface-elevated p-6 rounded-2xl shadow-2xl border border-border max-w-sm w-full animate-scale-in">
+                 <div className="flex items-center gap-3 mb-4">
+                     <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
+                        <AlertTriangle size={20} />
+                     </div>
+                     <h3 className="text-lg font-bold text-foreground">Clear Canvas?</h3>
+                 </div>
+                 <p className="text-sm text-foreground-secondary mb-6 leading-relaxed">
+                     This will remove the current image and reset your view settings. This action cannot be undone.
+                 </p>
+                 <div className="flex gap-3">
+                     <button 
+                        onClick={() => setShowClearConfirm(false)} 
+                        className="flex-1 py-2.5 border border-border rounded-xl font-bold text-xs hover:bg-surface-sunken transition-colors"
+                     >
+                        Cancel
+                     </button>
+                     <button 
+                        onClick={() => { dispatch({ type: 'SET_IMAGE', payload: null }); setShowClearConfirm(false); }} 
+                        className="flex-1 py-2.5 bg-red-600 text-white rounded-xl font-bold text-xs hover:bg-red-700 shadow-md transition-all active:scale-95"
+                     >
+                        Yes, Clear
+                     </button>
+                 </div>
+             </div>
+         </div>
+       )}
+
+       {/* Canvas Toolbar (Show if image exists, regardless of mode) */}
+       {state.uploadedImage && (
+           <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-white/80 backdrop-blur border border-border/50 rounded-lg p-1 shadow-sm select-none transition-opacity hover:opacity-100 opacity-60">
+              <button 
+                 className="flex items-center gap-1 px-2 py-1 text-xs font-medium hover:bg-black/5 rounded text-foreground-secondary active:scale-95 transition-transform" 
+                 title="Fit to Screen"
+                 onClick={handleFitToScreen}
+              >
+                 <Minimize2 size={14} /> Fit
+              </button>
+              
+              {!isVideo && (
+                 <>
+                   <div className="w-px h-4 bg-border" />
+                   <button 
+                     className={cn(
+                       "flex items-center gap-1 px-2 py-1 text-xs font-medium rounded transition-colors active:scale-95",
+                       state.workflow.canvasSync ? "bg-foreground text-background" : "hover:bg-black/5 text-foreground-secondary"
+                     )}
+                     onClick={() => dispatch({ type: 'UPDATE_WORKFLOW', payload: { canvasSync: !state.workflow.canvasSync } })}
+                   >
+                      <Columns size={14} /> Split
+                   </button>
+                 </>
+              )}
+           </div>
+       )}
+
+       {/* Top Right Floating Actions (Clear) - Outside Transform Context */}
+       {state.uploadedImage && (
+           <div className="absolute top-4 right-4 z-20 pointer-events-auto animate-fade-in">
+              <button 
+                  onClick={() => setShowClearConfirm(true)}
+                  className="bg-white/90 backdrop-blur text-red-600 border border-red-200/50 hover:border-red-300 px-4 py-2.5 rounded-xl text-xs font-bold shadow-elevated hover:bg-red-50 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 group"
+              >
+                  <Trash2 size={16} className="group-hover:rotate-12 transition-transform" />
+                  <span>Clear</span>
+              </button>
+           </div>
+       )}
 
       <div 
          ref={containerRef}
          className={cn(
-            "flex-1 relative flex items-center justify-center bg-checkerboard overflow-hidden",
+            "flex-1 relative flex items-center justify-center bg-checkerboard overflow-hidden h-full w-full",
             isPanning ? "cursor-grabbing" : "cursor-grab"
          )}
          onWheel={handleWheel}
@@ -146,117 +355,167 @@ export const ImageCanvas: React.FC = () => {
          onMouseUp={endPan}
          onMouseLeave={endPan}
       >
-         {/* Grid Pattern Background */}
-         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-            style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '20px 20px' }} 
+         {/* Dot Grid Background */}
+         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
+            style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '24px 24px' }} 
          />
 
          {state.uploadedImage ? (
-            <div className="w-full h-full flex items-center justify-center pointer-events-none">
+            // Wrap the transformable content in a container that fills the screen
+            // The transform style is applied here.
+            <div 
+               className="w-full h-full flex items-center justify-center origin-center pointer-events-auto"
+               style={transformStyle}
+            >
                {showSplit ? (
                   // Split View
-                  <div 
-                     className="flex gap-1 bg-background border border-border p-1 shadow-2xl origin-center"
-                     style={transformStyle}
-                  >
+                  <div className="flex gap-1 bg-white border border-border p-2 shadow-2xl rounded-sm items-stretch max-w-[95%] max-h-[95%]">
                      <div className="relative bg-surface-sunken">
-                        <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider text-foreground-muted bg-surface-elevated px-2 py-1 rounded shadow-sm z-10 pointer-events-auto">Original</span>
+                        <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider text-foreground-muted bg-white px-2 py-1 rounded shadow-sm z-10">Original</span>
                         <img 
-                           ref={imgRef}
                            src={state.uploadedImage} 
-                           className="max-h-[80vh] object-contain block" 
+                           className="max-w-full max-h-full object-contain block select-none" 
                            draggable={false}
                         />
                      </div>
                      <div className="w-px bg-border-strong" />
                      <div className="relative bg-surface-elevated">
-                        <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider text-accent bg-surface-elevated px-2 py-1 rounded shadow-sm border border-accent/20 z-10 pointer-events-auto">Preview</span>
-                        <div className="absolute inset-0 flex items-center justify-center opacity-10">
-                           <AlertCircle size={48} />
-                        </div>
+                        <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider text-accent bg-white px-2 py-1 rounded shadow-sm border border-accent/20 z-10">Preview</span>
                         <img 
                            src={state.uploadedImage} 
-                           className="max-h-[80vh] object-contain block opacity-50 grayscale blur-sm"
+                           className="max-w-full max-h-full object-contain block opacity-50 grayscale blur-sm select-none"
                            draggable={false}
                         />
                      </div>
                   </div>
                ) : (
-                  // Single View or Video View
-                  <div 
-                     className="relative shadow-2xl origin-center group"
-                     style={transformStyle}
-                  >
+                  // Single View
+                  <div className="relative group/image max-w-[90%] max-h-[90%] flex items-center justify-center">
                      {isVideo ? (
-                        <div className="relative border-2 border-transparent group-hover:border-accent/50 transition-colors rounded-lg overflow-hidden bg-black">
+                        <div className="relative border-4 border-black rounded-xl overflow-hidden bg-black shadow-2xl">
                            <img 
-                              ref={imgRef}
                               src={state.uploadedImage} 
                               alt="Video Frame" 
-                              className="max-h-[85vh] max-w-[85vw] object-contain block select-none opacity-80"
+                              className="max-w-full max-h-full object-contain block select-none opacity-80"
                               draggable={false}
                            />
-                           {/* Simulated Video UI Overlay */}
                            <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
                               <button 
                                 onClick={(e) => { e.stopPropagation(); setIsPlaying(!isPlaying); }}
-                                className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-all text-white border border-white/40 shadow-xl"
+                                className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-white/20 transition-all text-white border border-white/30 shadow-xl group-hover:scale-110"
                               >
                                 {isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" className="ml-1" />}
                               </button>
                            </div>
-                           <div className="absolute top-4 right-4 bg-black/60 backdrop-blur px-2 py-1 rounded text-[10px] font-mono text-white/80 pointer-events-none">
-                              {state.workflow.videoState.resolution} • {state.workflow.videoState.fps} FPS
-                           </div>
                         </div>
                      ) : (
-                        <img 
-                           ref={imgRef}
-                           src={state.uploadedImage} 
-                           alt="Workspace" 
-                           className="max-h-[85vh] max-w-[85vw] object-contain block select-none"
-                           draggable={false}
-                        />
+                         <div className="relative group/image">
+                             <img 
+                                src={state.uploadedImage} 
+                                alt="Workspace" 
+                                className="max-w-full max-h-full object-contain block select-none shadow-xl rounded-sm"
+                                draggable={false}
+                                onClick={(e) => {
+                                   if (!isPanning) {
+                                       setIsFullscreen(true);
+                                   }
+                                }}
+                             />
+                             <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-0 group-hover/image:opacity-100 transition-opacity">
+                                <div className="bg-black/30 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1 shadow-lg">
+                                    <Maximize2 size={12} /> Click to Expand
+                                </div>
+                             </div>
+                        </div>
                      )}
-                     
-                     <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-auto">
-                        <button 
-                        onClick={(e) => { e.stopPropagation(); dispatch({ type: 'SET_IMAGE', payload: null }); }}
-                        className="bg-black/50 text-white px-3 py-1.5 rounded-md text-xs backdrop-blur-sm hover:bg-black/70 shadow-sm"
-                        >
-                        Clear Image
-                        </button>
-                     </div>
                   </div>
                )}
             </div>
          ) : (
+            // Empty State
             <div 
                className={cn(
-                  "w-[400px] h-[300px] border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-4 transition-all cursor-pointer bg-surface-elevated/50 backdrop-blur-sm relative z-10",
-                  isDragging ? "border-accent bg-accent/5" : "border-border-strong hover:border-foreground/30"
+                  "relative z-10 flex flex-col items-center justify-center transition-all duration-500 pointer-events-auto",
+                  !isGenerateText && isDragging ? "scale-105 opacity-50" : "scale-100 opacity-100"
                )}
-               onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-               onDragLeave={() => setIsDragging(false)}
-               onDrop={handleDrop}
-               onClick={() => fileInputRef.current?.click()}
+               onDragOver={isGenerateText ? undefined : (e) => { e.preventDefault(); setIsDragging(true); }}
+               onDragLeave={isGenerateText ? undefined : () => setIsDragging(false)}
+               onDrop={isGenerateText ? undefined : handleDrop}
             >
-               <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
-               <div className="w-16 h-16 rounded-full bg-surface-sunken flex items-center justify-center">
-                  <UploadCloud className="text-foreground-muted" size={32} />
-               </div>
-               <div className="text-center space-y-1">
-                  <p className="font-medium text-foreground">Click or drop image</p>
-                  <p className="text-xs text-foreground-muted">Support for PNG, JPG (Max 50MB)</p>
-               </div>
+               {isGenerateText ? (
+                   <div className="text-center space-y-4 max-w-md select-none opacity-40 animate-fade-in">
+                       <div className="w-24 h-24 bg-surface-elevated rounded-[2rem] shadow-soft flex items-center justify-center mx-auto border border-border">
+                           <Wand2 size={40} className="text-accent" />
+                       </div>
+                       <div>
+                           <h3 className="text-xl font-medium text-foreground tracking-tight">Canvas Ready</h3>
+                           <p className="text-sm text-foreground-muted mt-2 leading-relaxed max-w-xs mx-auto">
+                               Enter your prompt below to generate. The result will appear here.
+                           </p>
+                       </div>
+                   </div>
+               ) : (
+                   <div 
+                        onClick={() => fileInputRef.current?.click()}
+                        className={cn(
+                            "w-[480px] h-[320px] border-2 border-dashed rounded-3xl flex flex-col items-center justify-center gap-6 cursor-pointer bg-white/50 backdrop-blur-sm hover:bg-white hover:border-foreground/20 hover:shadow-xl transition-all group",
+                            isDragging ? "border-accent bg-accent/5 scale-105" : "border-border-strong"
+                        )}
+                   >
+                       <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
+                       <div className="w-20 h-20 rounded-full bg-surface-sunken flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-inner">
+                           <UploadCloud className="text-foreground-muted group-hover:text-foreground" size={36} />
+                       </div>
+                       <div className="text-center space-y-1.5">
+                           <p className="font-semibold text-foreground text-lg">Upload Source Image</p>
+                           <p className="text-xs text-foreground-muted">Drag & drop or click to browse</p>
+                           <div className="flex gap-2 justify-center mt-2">
+                               <span className="px-2 py-1 bg-surface-sunken rounded text-[10px] text-foreground-secondary font-mono">PNG</span>
+                               <span className="px-2 py-1 bg-surface-sunken rounded text-[10px] text-foreground-secondary font-mono">JPG</span>
+                               <span className="px-2 py-1 bg-surface-sunken rounded text-[10px] text-foreground-secondary font-mono">WEBP</span>
+                           </div>
+                       </div>
+                   </div>
+               )}
             </div>
          )}
-      </div>
-      
-      {/* Zoom Indicator Overlay */}
-      <div className="absolute bottom-6 right-6 bg-black/70 backdrop-blur text-white px-3 py-1.5 rounded-full text-xs font-mono pointer-events-none z-20">
-         {Math.round(state.canvas.zoom * 100)}%
+
+         {/* Generation Overlay */}
+         {state.isGenerating && (
+             <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/30 backdrop-blur-sm animate-fade-in pointer-events-none">
+                 <div className="bg-white/90 p-8 rounded-3xl shadow-2xl flex flex-col items-center gap-4 border border-white/50">
+                     <div className="relative w-16 h-16">
+                         <div className="absolute inset-0 border-4 border-surface-sunken rounded-full"></div>
+                         <div className="absolute inset-0 border-4 border-accent rounded-full border-t-transparent animate-spin"></div>
+                         <Sparkles size={24} className="absolute inset-0 m-auto text-accent animate-pulse" />
+                     </div>
+                     <div className="text-center">
+                         <h4 className="text-sm font-bold text-foreground">Generating...</h4>
+                         <p className="text-xs text-foreground-muted mt-1">Refining geometry & lighting</p>
+                     </div>
+                 </div>
+             </div>
+         )}
       </div>
     </div>
   );
+};
+
+export const ImageCanvas: React.FC = () => {
+  const { state } = useAppStore();
+  
+  if (state.mode === 'generate-text') {
+      return (
+        <div className="flex flex-col h-full bg-background w-full">
+           <div className="flex-1 relative overflow-hidden min-h-0">
+               <StandardCanvas />
+           </div>
+           <div className="shrink-0 z-30 px-6 py-6 flex justify-center bg-background border-t border-border-subtle/50">
+              <PromptBar />
+           </div>
+        </div>
+      );
+  }
+  
+  return <StandardCanvas />;
 };

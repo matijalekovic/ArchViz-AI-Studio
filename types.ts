@@ -1,5 +1,6 @@
 
 export type GenerationMode = 
+  | 'generate-text'
   | 'render-3d' 
   | 'render-cad' 
   | 'masterplan' 
@@ -20,6 +21,16 @@ export interface StyleConfiguration {
   description: string;
   previewUrl?: string;
   promptBundle: any;
+}
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string; // text for user, image url for assistant
+  type: 'text' | 'image';
+  attachments?: string[]; // base64 strings
+  timestamp: number;
+  isLoading?: boolean;
 }
 
 export interface DetectedElement {
@@ -47,6 +58,9 @@ export interface ZoneItem {
 }
 
 export interface WorkflowSettings {
+  // 0. Text to Image
+  textPrompt: string;
+
   // 1. 3D to Render
   sourceType: 'revit' | 'rhino' | 'sketchup' | 'blender' | '3dsmax' | 'clay' | 'other';
   viewType: 'exterior' | 'interior' | 'aerial' | 'detail';
@@ -161,7 +175,8 @@ export interface VideoState {
     duration: number;
     zoom: number;
   };
-
+  
+  keyframes: { id: string; url: string; duration: number }[];
   generatedVideoUrl: string | null;
 }
 
@@ -358,6 +373,8 @@ export interface AppState {
   workflow: WorkflowSettings;
   materialValidation: MaterialValidationState;
   
+  chatMessages: ChatMessage[];
+
   geometry: GeometryState;
   camera: CameraState;
   lighting: LightingState;
@@ -392,6 +409,8 @@ export type Action =
   | { type: 'UPDATE_VIDEO_CAMERA'; payload: Partial<VideoState['camera']> }
   | { type: 'UPDATE_VIDEO_TIMELINE'; payload: Partial<VideoState['timeline']> }
   | { type: 'UPDATE_MATERIAL_VALIDATION'; payload: Partial<MaterialValidationState> }
+  | { type: 'ADD_CHAT_MESSAGE'; payload: ChatMessage }
+  | { type: 'UPDATE_CHAT_MESSAGE'; payload: { id: string; updates: Partial<ChatMessage> } }
   | { type: 'UPDATE_GEOMETRY'; payload: Partial<GeometryState> }
   | { type: 'UPDATE_CAMERA'; payload: Partial<CameraState> }
   | { type: 'UPDATE_LIGHTING'; payload: Partial<LightingState> }

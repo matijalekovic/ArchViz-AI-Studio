@@ -8,7 +8,7 @@ import {
   Pencil, Maximize, PenTool, Cuboid, Video, Hand, MousePointer, 
   Paintbrush, Sun, Home, Cloud, Trash2, Wrench, Plus, RotateCw, Grid, Check,
   ZoomIn, ZoomOut, MoveRight, MoveLeft, MoveUp, MoveDown, RotateCcw, RotateCw as RotateCwIcon, Sliders, Image as ImageIcon, Camera,
-  RefreshCw, MousePointerClick, ClipboardCheck, Zap,
+  RefreshCw, MousePointerClick, ClipboardCheck, Zap, Sparkles,
   Layout as LayoutIcon, Scissors as ScissorsIcon, Building as BuildingIcon, Map as MapIcon, Box as BoxIcon,
   PlayCircle, Film, Wand2, Eye, EyeOff, FileDigit, ScanLine, Expand,
   FileText, FileSpreadsheet, UploadCloud, MoreHorizontal, FileCheck,
@@ -23,6 +23,7 @@ import { nanoid } from 'nanoid/non-secure';
 
 // --- Workflow Navigation ---
 const WORKFLOWS: { id: GenerationMode; label: string; icon: React.ElementType }[] = [
+  { id: 'generate-text', label: 'Generate', icon: Sparkles },
   { id: 'render-3d', label: '3D to Render', icon: Palette },
   { id: 'render-cad', label: 'CAD to Render', icon: FileCode },
   { id: 'masterplan', label: 'Masterplans', icon: Map },
@@ -66,8 +67,11 @@ const StyleGrid: React.FC<{ activeId: string; onSelect: (id: string) => void; on
                  : "border-border opacity-90 hover:opacity-100 hover:border-foreground-muted hover:scale-[1.01]"
             )}
           >
-            <div className="absolute inset-0 z-0 transition-transform duration-500 group-hover:scale-105" style={{ background: style.previewUrl }} />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent z-0" />
+            <div 
+              className="absolute inset-0 z-0 transition-transform duration-500 group-hover:scale-105 bg-cover bg-center" 
+              style={{ backgroundImage: `url(${style.previewUrl})` }} 
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent z-0" />
             
             <div className="relative z-10 px-2 py-1 w-full">
               <p className="text-white text-[10px] font-bold leading-tight truncate w-full shadow-sm group-hover:text-accent-muted transition-colors">{style.name}</p>
@@ -94,6 +98,12 @@ const StyleGrid: React.FC<{ activeId: string; onSelect: (id: string) => void; on
 };
 
 // --- FEATURE PANELS ---
+
+// NOTE: GenerateTextPanel is effectively unused in layout now as we hide the sidebar content in this mode, 
+// but keeping it for potential future restoration or reference.
+const GenerateTextPanel = () => {
+  return null; 
+};
 
 const Render3DPanel = () => {
     const { state, dispatch } = useAppStore();
@@ -185,6 +195,7 @@ const Render3DPanel = () => {
     );
 };
 
+// ... (Rest of the components remain largely the same, just keeping the structure)
 const RenderCADPanel = () => {
     const { state, dispatch } = useAppStore();
     const wf = state.workflow;
@@ -706,6 +717,24 @@ const VideoPanel = () => {
    const { state, dispatch } = useAppStore();
    const video = state.workflow.videoState;
    const updateVideo = (payload: Partial<typeof video>) => dispatch({ type: 'UPDATE_VIDEO_STATE', payload });
+   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+   const handleAddKeyframe = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files[0]) {
+         const reader = new FileReader();
+         reader.onload = (ev) => {
+            if (ev.target?.result) {
+               const newKeyframe = {
+                  id: nanoid(),
+                  url: ev.target.result as string,
+                  duration: 2
+               };
+               updateVideo({ keyframes: [...video.keyframes, newKeyframe] });
+            }
+         };
+         reader.readAsDataURL(e.target.files[0]);
+      }
+   };
 
    return (
       <div className="space-y-6">
@@ -744,6 +773,36 @@ const VideoPanel = () => {
                ))}
             </div>
          </div>
+
+         {video.inputMode !== 'image-animate' && (
+            <div>
+               <SectionHeader title="Input Sequence" />
+               <div className="grid grid-cols-2 gap-2">
+                  {video.keyframes.map((frame, i) => (
+                     <div key={frame.id} className="relative group aspect-video bg-black rounded overflow-hidden border border-border">
+                        <img src={frame.url} className="w-full h-full object-cover opacity-80" />
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/40 transition-opacity">
+                           <button 
+                              onClick={() => updateVideo({ keyframes: video.keyframes.filter(k => k.id !== frame.id) })}
+                              className="p-1 bg-red-500/80 text-white rounded hover:bg-red-500"
+                           >
+                              <Trash2 size={12} />
+                           </button>
+                        </div>
+                        <div className="absolute bottom-1 left-1 px-1 bg-black/50 text-[9px] text-white rounded">{i+1}</div>
+                     </div>
+                  ))}
+                  <button 
+                     onClick={() => fileInputRef.current?.click()}
+                     className="aspect-video border-2 border-dashed border-border rounded flex flex-col items-center justify-center gap-1 hover:bg-surface-elevated hover:border-foreground-muted transition-colors text-foreground-muted"
+                  >
+                     <Plus size={16} />
+                     <span className="text-[10px]">Add Frame</span>
+                  </button>
+               </div>
+               <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleAddKeyframe} />
+            </div>
+         )}
       </div>
    );
 };
@@ -826,9 +885,12 @@ const MaterialValidationPanel = () => {
 export const LeftSidebar: React.FC = () => {
   const { state, dispatch } = useAppStore();
   const { leftSidebarOpen } = state;
+  const isGenerateTextMode = state.mode === 'generate-text';
+  const showPanel = !isGenerateTextMode;
 
   const renderPanel = () => {
     switch (state.mode) {
+      case 'generate-text': return <GenerateTextPanel />;
       case 'render-3d': return <Render3DPanel />;
       case 'render-cad': return <RenderCADPanel />;
       case 'material-validation': return <MaterialValidationPanel />;
@@ -879,8 +941,8 @@ export const LeftSidebar: React.FC = () => {
         })}
       </div>
 
-      {/* Specific Workflow Content Panel */}
-      {leftSidebarOpen ? (
+      {/* Specific Workflow Content Panel - HIDDEN in generate-text mode */}
+      {showPanel && (leftSidebarOpen ? (
         <div className={cn(
           "bg-background-tertiary border-r border-border flex flex-col overflow-hidden transition-all relative",
           state.leftSidebarWidth ? `w-[${state.leftSidebarWidth}px]` : "w-[280px]"
@@ -920,7 +982,7 @@ export const LeftSidebar: React.FC = () => {
               </div>
            </div>
         </div>
-      )}
+      ))}
     </div>
   );
 };

@@ -1,3 +1,4 @@
+
 import React, { useRef, useState } from 'react';
 import { Undo, Redo, ZoomIn, ZoomOut, FolderOpen, RotateCcw, FileJson, Video, Download, Sparkles, Loader2, X, ChevronDown, CheckCircle2, FileDown, Image as ImageIcon, Maximize2, Minimize2, Film, MonitorPlay } from 'lucide-react';
 import { useAppStore } from '../../store';
@@ -16,7 +17,7 @@ export const TopBar: React.FC = () => {
   const [downloadResolution, setDownloadResolution] = useState<'full' | 'medium'>('full');
   
   const isVideoMode = state.mode === 'video';
-  const isDisabled = !state.uploadedImage;
+  const isDisabled = !state.uploadedImage && state.mode !== 'material-validation'; // Material validation doesn't need an image
 
   // --- Handlers ---
 
@@ -26,7 +27,7 @@ export const TopBar: React.FC = () => {
   };
 
   const handleGenerate = () => {
-    if (!state.uploadedImage || state.isGenerating) return;
+    if ((!state.uploadedImage && state.mode !== 'material-validation') || state.isGenerating) return;
     
     dispatch({ type: 'SET_GENERATING', payload: true });
     
@@ -81,11 +82,12 @@ export const TopBar: React.FC = () => {
     const prefix = isVideoMode ? 'archviz-video' : 'archviz-render';
     const filename = `${prefix}-${Date.now()}${resSuffix}.${ext}`;
 
-    // For video mode, we download the source URL directly (mocking resolution change by filename)
+    // For video mode, we download the source URL directly
     if (isVideoMode) {
         const downloadLink = document.createElement('a');
         downloadLink.href = state.uploadedImage;
         downloadLink.download = filename;
+        downloadLink.target = "_blank";
         document.body.appendChild(downloadLink);
         downloadLink.click();
         document.body.removeChild(downloadLink);
@@ -95,37 +97,74 @@ export const TopBar: React.FC = () => {
 
     // Process Image for Resolution/Format
     const img = new Image();
-    img.src = state.uploadedImage;
+    // Enable CORS to allow canvas export of external images (e.g. Unsplash)
+    img.crossOrigin = "anonymous";
+    
     img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
+        try {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
 
-        if (downloadResolution === 'medium') {
-            width *= 0.5;
-            height *= 0.5;
-        }
+            if (downloadResolution === 'medium') {
+                width *= 0.5;
+                height *= 0.5;
+            }
 
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        
-        if (ctx) {
-            ctx.drawImage(img, 0, 0, width, height);
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
             
-            const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg';
-            const quality = ext === 'jpg' ? 0.85 : undefined;
-            const dataUrl = canvas.toDataURL(mimeType, quality);
+            if (ctx) {
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg';
+                const quality = ext === 'jpg' ? 0.85 : undefined;
+                const dataUrl = canvas.toDataURL(mimeType, quality);
 
-            const downloadLink = document.createElement('a');
-            downloadLink.href = dataUrl;
-            downloadLink.download = filename;
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            document.body.removeChild(downloadLink);
-            setShowDownloadMenu(false);
+                const downloadLink = document.createElement('a');
+                downloadLink.href = dataUrl;
+                downloadLink.download = filename;
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                setShowDownloadMenu(false);
+            }
+        } catch (e) {
+            console.error("Canvas export failed (likely CORS restrictions), falling back to blob fetch.", e);
+            
+            // Fallback: Fetch as blob to bypass canvas tainting for simple downloads
+            fetch(state.uploadedImage!)
+                .then(response => response.blob())
+                .then(blob => {
+                    const blobUrl = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = blobUrl;
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(blobUrl);
+                    setShowDownloadMenu(false);
+                })
+                .catch(fetchErr => {
+                    console.error("Fallback fetch failed", fetchErr);
+                    // Ultimate fallback: open in new tab
+                    window.open(state.uploadedImage!, '_blank');
+                    setShowDownloadMenu(false);
+                });
         }
     };
+
+    img.onerror = () => {
+         console.error("Image failed to load for download processing.");
+         // Fallback if image object fails
+         window.open(state.uploadedImage!, '_blank');
+         setShowDownloadMenu(false);
+    };
+
+    // Set src after handlers
+    img.src = state.uploadedImage;
   };
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -147,6 +186,22 @@ export const TopBar: React.FC = () => {
   const handleReset = () => {
     if (confirm("Reset project? All unsaved data will be lost.")) {
       dispatch({ type: 'RESET_PROJECT' });
+    }
+  };
+
+  const getGenerateLabel = () => {
+    switch (state.mode) {
+      case 'masterplan': return 'Generate Masterplan';
+      case 'exploded': return 'Generate Exploded View';
+      case 'section': return 'Generate Section';
+      case 'upscale': return 'Upscale Image';
+      case 'img-to-cad': return 'Convert to CAD';
+      case 'img-to-3d': return 'Generate 3D Model';
+      case 'video': return 'Generate Video';
+      case 'visual-edit': return 'Apply Edits';
+      case 'material-validation': return 'Run Validation';
+      case 'render-sketch': return 'Render Sketch';
+      default: return 'Generate Render';
     }
   };
 
@@ -195,39 +250,41 @@ export const TopBar: React.FC = () => {
         </div>
       </div>
 
-      {/* Center: Generate Button */}
+      {/* Center: Generate Button (Hidden in generate-text mode) */}
       <div className="flex items-center justify-center w-1/3">
-        <button
-          aria-label="generate-trigger"
-          onClick={handleGenerate}
-          disabled={isDisabled || state.isGenerating}
-          className={cn(
-            "relative group flex items-center gap-3 px-8 py-2.5 rounded-full transition-all duration-300 border border-transparent overflow-hidden",
-            isDisabled 
-              ? "bg-surface-sunken text-foreground-muted cursor-not-allowed" 
-              : "bg-foreground text-background shadow-lg hover:scale-105 active:scale-95 hover:shadow-xl hover:border-accent/50"
-          )}
-        >
-          {/* Animated Background Gradient for Active State */}
-          {!isDisabled && !state.isGenerating && (
-             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out" />
-          )}
+        {state.mode !== 'generate-text' && (
+          <button
+            aria-label="generate-trigger"
+            onClick={handleGenerate}
+            disabled={isDisabled || state.isGenerating}
+            className={cn(
+              "relative group flex items-center gap-3 px-8 py-2.5 rounded-full transition-all duration-300 border border-transparent overflow-hidden",
+              isDisabled 
+                ? "bg-surface-sunken text-foreground-muted cursor-not-allowed" 
+                : "bg-foreground text-background shadow-lg hover:scale-105 active:scale-95 hover:shadow-xl hover:border-accent/50"
+            )}
+          >
+            {/* Animated Background Gradient for Active State */}
+            {!isDisabled && !state.isGenerating && (
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out" />
+            )}
 
-          {state.isGenerating ? (
-            <>
-              <Loader2 className="animate-spin" size={18} />
-              <div className="flex flex-col items-start leading-none">
-                <span className="font-bold text-xs">Generating</span>
-                <span className="text-[9px] opacity-80 font-mono">{state.progress}%</span>
-              </div>
-            </>
-          ) : (
-            <>
-              <Sparkles size={18} className={cn(!isDisabled && "group-hover:text-accent transition-colors")} />
-              <span className="font-bold text-sm tracking-wide">Generate Render</span>
-            </>
-          )}
-        </button>
+            {state.isGenerating ? (
+              <>
+                <Loader2 className="animate-spin" size={18} />
+                <div className="flex flex-col items-start leading-none">
+                  <span className="font-bold text-xs">Generating</span>
+                  <span className="text-[9px] opacity-80 font-mono">{state.progress}%</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <Sparkles size={18} className={cn(!isDisabled && "group-hover:text-accent transition-colors")} />
+                <span className="font-bold text-sm tracking-wide">{getGenerateLabel()}</span>
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Right: Actions */}

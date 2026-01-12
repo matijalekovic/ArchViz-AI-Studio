@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useAppStore } from '../../../store';
 import { Slider } from '../../ui/Slider';
@@ -37,7 +38,7 @@ const StyleSelector = ({ state, dispatch }: any) => (
               <m.icon size={16} className={cn("mr-3", state.workflow.renderMode === m.id ? "text-accent" : "text-foreground-muted")} />
               <div>
                  <div className="text-xs font-medium">{m.label}</div>
-                 <div className="text-[10px] text-foreground-muted">{m.desc}</div>
+                 <div className="text-xs text-foreground-muted">{m.desc}</div>
               </div>
            </button>
         ))}
@@ -299,6 +300,8 @@ export const RightPanel: React.FC = () => {
   const { rightPanelOpen, rightPanelWidth } = state;
   const isVideo = state.mode === 'video';
 
+  if (state.mode === 'generate-text') return null;
+
   if (!rightPanelOpen) {
     return (
       <div className="w-12 bg-background-tertiary border-l border-border relative flex flex-col items-center py-4 gap-4">
@@ -323,6 +326,10 @@ export const RightPanel: React.FC = () => {
 
   const accordionItems = isVideo ? [
      { id: 'video-settings', title: 'Video Configuration', content: <VideoSettingsPanel /> },
+     { id: 'geometry', title: 'Geometry & Structure', content: <GeometrySection /> },
+     { id: 'lighting', title: 'Lighting & Atmosphere', content: <LightingSection /> },
+     { id: 'materials', title: 'Materials & Finishes', content: <MaterialsSection /> },
+     { id: 'context', title: 'Environment & Context', content: <ContextSection /> },
      { id: 'visual-prompt', title: 'Prompting', content: <VisualPromptBlock state={state} dispatch={dispatch} /> }
   ] : [
      { id: 'geometry', title: 'Geometry & Structure', content: <GeometrySection /> },
@@ -354,7 +361,7 @@ export const RightPanel: React.FC = () => {
 
       <div className="flex-1 overflow-y-auto p-5 custom-scrollbar">
          {/* Generation Mode Selector (Top of Right Panel) */}
-         {!isVideo && <StyleSelector state={state} dispatch={dispatch} />}
+         <StyleSelector state={state} dispatch={dispatch} />
 
          <Accordion items={accordionItems} defaultValue={accordionItems[0].id} />
       </div>

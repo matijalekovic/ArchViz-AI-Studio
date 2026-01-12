@@ -1,9 +1,13 @@
+
 import React from 'react';
 import { useAppStore } from '../store';
 import { Sparkles, Loader2 } from 'lucide-react';
 
 export const FloatingGenerateButton: React.FC = () => {
   const { state, dispatch } = useAppStore();
+
+  // If in chat mode, the chat interface has its own send button.
+  if (state.mode === 'generate-text') return null;
 
   const handleGenerate = () => {
     if (!state.uploadedImage || state.isGenerating) return;
@@ -19,7 +23,6 @@ export const FloatingGenerateButton: React.FC = () => {
         clearInterval(interval);
         dispatch({ type: 'SET_GENERATING', payload: false });
         dispatch({ type: 'SET_PROGRESS', payload: 0 });
-        // Don't alert in production, just finish
       }
     }, 50);
   };
