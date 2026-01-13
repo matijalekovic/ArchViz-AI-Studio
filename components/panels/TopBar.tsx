@@ -224,20 +224,20 @@ export const TopBar: React.FC = () => {
     <>
     <header className="h-16 bg-surface-elevated border-b border-border flex items-center justify-between px-6 shrink-0 z-40 shadow-sm relative">
       {/* Left: Branding & Utility */}
-      <div className="flex items-center gap-6 w-1/3">
-        <div className="flex items-center gap-2 select-none">
-          <div className="w-8 h-8 bg-foreground rounded-lg flex items-center justify-center shadow-md">
+      <div className="flex items-center gap-6 flex-1 min-w-0">
+        <div className="flex items-center gap-2 select-none shrink-0">
+          <div className="w-8 h-8 bg-foreground rounded-lg flex items-center justify-center shadow-md shrink-0">
             <span className="text-surface-elevated font-bold text-sm">AV</span>
           </div>
-          <div>
-            <h1 className="font-bold text-sm leading-tight">ArchViz Studio</h1>
-            <p className="text-[10px] text-foreground-muted">Stateless Session</p>
+          <div className="flex flex-col shrink-0">
+            <h1 className="font-bold text-sm leading-tight whitespace-nowrap">ArchViz Studio</h1>
+            <p className="text-[10px] text-foreground-muted whitespace-nowrap">Stateless Session</p>
           </div>
         </div>
 
-        <div className="h-6 w-px bg-border-strong" />
+        <div className="h-6 w-px bg-border-strong shrink-0" />
 
-        <div className="flex items-center gap-1 bg-surface-sunken p-1 rounded-lg border border-border-subtle">
+        <div className="flex items-center gap-1 bg-surface-sunken p-1 rounded-lg border border-border-subtle shrink-0">
           <button className="p-1.5 text-foreground-secondary hover:text-foreground hover:bg-surface-elevated rounded-md transition-all" title="Undo">
             <Undo size={14} />
           </button>
@@ -320,7 +320,7 @@ export const TopBar: React.FC = () => {
       </div>
 
       {/* Center: Generate Button (Hidden in generate-text mode) */}
-      <div className="flex items-center justify-center w-1/3">
+      <div className="flex items-center justify-center shrink-0 mx-4">
         {state.mode !== 'generate-text' && (
           <button
             aria-label="generate-trigger"
@@ -357,9 +357,9 @@ export const TopBar: React.FC = () => {
       </div>
 
       {/* Right: Actions */}
-      <div className="flex items-center justify-end gap-3 w-1/3 relative">
+      <div className="flex items-center justify-end gap-3 flex-1 min-w-0 relative">
         {/* Subtle Project Management Tools */}
-        <div className="flex items-center gap-1 mr-2">
+        <div className="flex items-center gap-1 mr-2 shrink-0">
             <button 
               onClick={handleReset}
               className="p-2 text-foreground-muted hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
@@ -384,12 +384,12 @@ export const TopBar: React.FC = () => {
               title="Save Project State (JSON)"
             >
               <FileJson size={14} />
-              <span>Save Project</span>
+              <span className="hidden lg:inline">Save Project</span>
             </button>
         </div>
 
         {/* Download Button Group */}
-        <div className="relative">
+        <div className="relative shrink-0">
           <button 
             onClick={handleDownloadClick}
             disabled={!state.uploadedImage}
@@ -402,7 +402,7 @@ export const TopBar: React.FC = () => {
             title={!state.uploadedImage ? "Generate output first" : "Download options"}
           >
             {isVideoMode ? <Video size={14} /> : <Download size={14} />}
-            <span>Download</span>
+            <span className="hidden sm:inline">Download</span>
             {state.uploadedImage && <ChevronDown size={12} className={cn("transition-transform", showDownloadMenu && "rotate-180")} />}
           </button>
 
