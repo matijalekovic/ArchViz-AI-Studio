@@ -15,7 +15,7 @@ import {
   Minimize, MoreHorizontal, HelpCircle, Share2, MonitorPlay, Zap, Image as ImageIcon,
   Move, RotateCcw, Focus, Moon, CloudSun, Sunrise, Shuffle, Clock, Gem, Plus, Check, ChevronDown,
   Monitor, Globe, Film, RotateCw, Eye, Thermometer, Droplets, Trees, User, Car, Sofa, Wind, Mountain,
-  Plane
+  Plane, Lock
 } from 'lucide-react';
 import { BUILT_IN_STYLES } from '../../../engine/promptEngine';
 
@@ -40,9 +40,6 @@ const SectionDesc: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   </p>
 );
 
-// --- SPECIFICATION COMPONENTS ---
-
-// 4. SliderControl
 interface SliderControlProps {
   label: string;
   value: number;
@@ -65,7 +62,67 @@ const SliderControl: React.FC<SliderControlProps> = ({ label, value, min, max, s
   </div>
 );
 
-// Sun Widget
+interface VerticalCardProps {
+  label: string;
+  description: string;
+  selected: boolean;
+  onClick: () => void;
+}
+
+const VerticalCard: React.FC<VerticalCardProps> = ({ label, description, selected, onClick }) => (
+  <button
+    onClick={onClick}
+    className={cn(
+      "w-full text-left p-3 rounded-lg border transition-all mb-2 flex flex-col gap-1",
+      selected
+        ? "bg-foreground text-background border-foreground shadow-sm"
+        : "bg-surface-elevated border-border hover:border-foreground-muted"
+    )}
+  >
+    <span className="text-xs font-bold">{label}</span>
+    <span className={cn("text-[10px] leading-relaxed", selected ? "text-white/80" : "text-foreground-muted")}>
+      {description}
+    </span>
+  </button>
+);
+
+const ColorPicker: React.FC<{ color: string; onChange: (c: string) => void }> = ({ color, onChange }) => {
+  return (
+    <div className="flex items-center gap-2">
+      <div className="w-8 h-6 rounded border border-border shadow-sm overflow-hidden relative">
+         <input type="color" value={color} onChange={(e) => onChange(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+         <div className="w-full h-full" style={{ backgroundColor: color }} />
+      </div>
+    </div>
+  );
+};
+
+interface NumberInputProps {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step?: number;
+  onChange: (val: number) => void;
+}
+
+const NumberInput: React.FC<NumberInputProps> = ({ label, value, min, max, step = 1, onChange }) => (
+  <div className="flex items-center justify-between">
+    <label className="text-xs font-medium text-foreground">{label}</label>
+    <input
+      type="number"
+      value={value}
+      min={min}
+      max={max}
+      step={step}
+      onChange={(e) => onChange(Number(e.target.value))}
+      className="w-16 h-7 bg-surface-sunken border border-border rounded px-2 text-xs text-right focus:border-accent outline-none"
+    />
+  </div>
+);
+
+// --- 3D RENDER SPECIFIC COMPONENTS ---
+
 const SunPositionWidget: React.FC<{ azimuth: number; elevation: number; onChange: (az: number, el: number) => void }> = ({ azimuth, elevation, onChange }) => {
   const boxRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -136,68 +193,7 @@ const SunPositionWidget: React.FC<{ azimuth: number; elevation: number; onChange
   );
 };
 
-// --- ADDITIONAL SHARED COMPONENTS ---
-
-interface VerticalCardProps {
-  label: string;
-  description: string;
-  selected: boolean;
-  onClick: () => void;
-}
-
-const VerticalCard: React.FC<VerticalCardProps> = ({ label, description, selected, onClick }) => (
-  <button
-    onClick={onClick}
-    className={cn(
-      "w-full text-left p-3 rounded-lg border transition-all mb-2 flex flex-col gap-1",
-      selected
-        ? "bg-foreground text-background border-foreground shadow-sm"
-        : "bg-surface-elevated border-border hover:border-foreground-muted"
-    )}
-  >
-    <span className="text-xs font-bold">{label}</span>
-    <span className={cn("text-[10px] leading-relaxed", selected ? "text-white/80" : "text-foreground-muted")}>
-      {description}
-    </span>
-  </button>
-);
-
-const ColorPicker: React.FC<{ color: string; onChange: (c: string) => void }> = ({ color, onChange }) => {
-  return (
-    <div className="flex items-center gap-2">
-      <div className="w-8 h-6 rounded border border-border shadow-sm overflow-hidden relative">
-         <input type="color" value={color} onChange={(e) => onChange(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
-         <div className="w-full h-full" style={{ backgroundColor: color }} />
-      </div>
-    </div>
-  );
-};
-
-interface NumberInputProps {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  step?: number;
-  onChange: (val: number) => void;
-}
-
-const NumberInput: React.FC<NumberInputProps> = ({ label, value, min, max, step = 1, onChange }) => (
-  <div className="flex items-center justify-between">
-    <label className="text-xs font-medium text-foreground">{label}</label>
-    <input
-      type="number"
-      value={value}
-      min={min}
-      max={max}
-      step={step}
-      onChange={(e) => onChange(Number(e.target.value))}
-      className="w-16 h-7 bg-surface-sunken border border-border rounded px-2 text-xs text-right focus:border-accent outline-none"
-    />
-  </div>
-);
-
-// --- MAIN FEATURE COMPONENT ---
+// --- FEATURE 1: 3D TO RENDER (Detailed Specification) ---
 
 const Render3DPanel = () => {
     const { state, dispatch } = useAppStore();
@@ -212,7 +208,10 @@ const Render3DPanel = () => {
         cornerSharpness: 50,
         structuralGrid: false,
         wireframe: false,
-        optimization: 'high'
+        optimization: 'high',
+        preservation: 90,
+        lockGeometry: true,
+        lockPerspective: true
       },
       lighting: {
         sun: { enabled: true, azimuth: 135, elevation: 45, intensity: 80, colorTemp: 5500, softness: 35 },
@@ -301,7 +300,19 @@ const Render3DPanel = () => {
                        <SliderControl label="Edge Strength" value={settings.geometry.edgeStrength} min={0} max={100} step={1} onChange={(v) => updateSection('geometry', { edgeStrength: v })} />
                        <SliderControl label="Corner Sharpness" value={settings.geometry.cornerSharpness} min={0} max={100} step={1} onChange={(v) => updateSection('geometry', { cornerSharpness: v })} />
                        
-                       <div className="space-y-2 pt-2 border-t border-border-subtle mt-2">
+                       {/* Preservation Section */}
+                       <div className="pt-3 border-t border-border-subtle mt-3">
+                          <div className="flex items-center justify-between mb-2">
+                             <span className="text-xs font-bold text-foreground-secondary flex items-center gap-1.5"><Lock size={12}/> Preservation</span>
+                          </div>
+                          <SliderControl label="Fidelity" value={settings.geometry.preservation} min={0} max={100} step={1} unit="%" onChange={(v) => updateSection('geometry', { preservation: v })} />
+                          <div className="space-y-1">
+                             <Toggle label="Lock Geometry" checked={settings.geometry.lockGeometry} onChange={(v) => updateSection('geometry', { lockGeometry: v })} />
+                             <Toggle label="Lock Perspective" checked={settings.geometry.lockPerspective} onChange={(v) => updateSection('geometry', { lockPerspective: v })} />
+                          </div>
+                       </div>
+
+                       <div className="space-y-2 pt-3 border-t border-border-subtle mt-3">
                           <Toggle label="Wireframe Overlay" checked={settings.geometry.wireframe} onChange={(v) => updateSection('geometry', { wireframe: v })} />
                           <Toggle label="Structural Grid" checked={settings.geometry.structuralGrid} onChange={(v) => updateSection('geometry', { structuralGrid: v })} />
                        </div>
@@ -645,6 +656,8 @@ const Render3DPanel = () => {
         </div>
     );
 };
+
+// --- RESTORED PANELS ---
 
 // --- FEATURE 2: CAD TO RENDER ---
 const CadToRenderPanel = () => {
@@ -1239,7 +1252,7 @@ const VideoPanel = () => {
     );
 };
 
-// --- Material Validation (Preserved) ---
+// --- Material Validation ---
 const ValidationPanel = () => {
     return (
         <div className="space-y-6">
